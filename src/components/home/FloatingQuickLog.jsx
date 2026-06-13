@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Droplets, Beef, ChevronUp, Check } from "lucide-react";
+import { Droplets, Beef, ChevronUp, Check, Minus, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getWaterGoal } from "@/lib/gameData";
 
@@ -11,7 +11,7 @@ const MEAL_TYPES = [
 ];
 
 export default function FloatingQuickLog({ dailyLog, profile, onWaterUpdate, onMealUpdate }) {
-  const [expanded, setExpanded] = useState(false);
+  const [showMeals, setShowMeals] = useState(false);
 
   const waterGoal = getWaterGoal(profile?.age, profile?.weight_kg);
   const currentMl = dailyLog?.water_ml || 0;
@@ -23,15 +23,8 @@ export default function FloatingQuickLog({ dailyLog, profile, onWaterUpdate, onM
 
   const isMealDone = (type) => meals.some((m) => m.type === type && m.completed);
 
-  const addWater = () => {
-    const newMl = currentMl + 250;
-    onWaterUpdate(newMl);
-  };
-
-  const removeWater = () => {
-    const newMl = Math.max(0, currentMl - 250);
-    onWaterUpdate(newMl);
-  };
+  const addWater = () => onWaterUpdate(currentMl + 250);
+  const removeWater = () => onWaterUpdate(Math.max(0, currentMl - 250));
 
   const toggleMeal = (type) => {
     const existing = meals.find((m) => m.type === type);
@@ -45,98 +38,91 @@ export default function FloatingQuickLog({ dailyLog, profile, onWaterUpdate, onM
 
   return (
     <div className="fixed bottom-20 left-0 right-0 z-40 px-4 pointer-events-none">
-      <div className="max-w-2xl mx-auto pointer-events-auto">
+      <div className="max-w-2xl mx-auto pointer-events-auto space-y-2">
+        {/* Meal quick-toggles (expandable) */}
         <AnimatePresence>
-          {expanded && (
+          {showMeals && (
             <motion.div
-              initial={{ opacity: 0, y: 20, height: 0 }}
+              initial={{ opacity: 0, y: 10, height: 0 }}
               animate={{ opacity: 1, y: 0, height: "auto" }}
-              exit={{ opacity: 0, y: 20, height: 0 }}
-              className="bg-card border border-border rounded-t-2xl px-4 pt-4 pb-2 mb-0 overflow-hidden shadow-2xl shadow-black/50"
+              exit={{ opacity: 0, y: 10, height: 0 }}
+              className="overflow-hidden"
             >
-              {/* Water quick add */}
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                    <Droplets className="w-4 h-4 text-blue-400" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold">Water</p>
-                    <p className="text-[10px] text-muted-foreground">{glasses}/10 glasses</p>
-                  </div>
+              <div className="bg-card border border-border rounded-2xl p-3 shadow-2xl shadow-black/50">
+                <div className="grid grid-cols-4 gap-2">
+                  {MEAL_TYPES.map((meal) => {
+                    const done = isMealDone(meal.key);
+                    return (
+                      <button
+                        key={meal.key}
+                        onClick={() => toggleMeal(meal.key)}
+                        className={`rounded-xl px-2 py-3 text-center transition-all active:scale-95 flex flex-col items-center gap-1 ${
+                          done
+                            ? "bg-green-500/15 border border-green-500/30"
+                            : "bg-secondary border border-transparent hover:border-border"
+                        }`}
+                      >
+                        <span className="text-xl">{meal.icon}</span>
+                        <span className="text-[10px] font-medium leading-tight">{meal.label}</span>
+                        {done && <Check className="w-3 h-3 text-green-400" />}
+                      </button>
+                    );
+                  })}
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-24 bg-secondary rounded-full h-2 overflow-hidden">
-                    <div
-                      className="h-2 rounded-full bg-blue-500 transition-all"
-                      style={{ width: `${waterPct}%` }}
-                    />
-                  </div>
-                  <button
-                    onClick={removeWater}
-                    disabled={currentMl <= 0}
-                    className="w-9 h-9 rounded-lg bg-secondary hover:bg-blue-500/20 flex items-center justify-center transition-colors active:scale-95 disabled:opacity-30 disabled:pointer-events-none"
-                  >
-                    <span className="text-sm font-bold text-muted-foreground">−</span>
-                  </button>
-                  <button
-                    onClick={addWater}
-                    className="w-9 h-9 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 flex items-center justify-center transition-colors active:scale-95"
-                  >
-                    <span className="text-sm font-bold text-blue-400">+</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Meal quick toggles */}
-              <div className="grid grid-cols-4 gap-1.5">
-                {MEAL_TYPES.map((meal) => {
-                  const done = isMealDone(meal.key);
-                  return (
-                    <button
-                      key={meal.key}
-                      onClick={() => toggleMeal(meal.key)}
-                      className={`rounded-xl px-2 py-2.5 text-center transition-all active:scale-95 flex flex-col items-center gap-1 ${
-                        done
-                          ? "bg-green-500/20 border border-green-500/30"
-                          : "bg-secondary hover:bg-secondary/70 border border-transparent"
-                      }`}
-                    >
-                      <span className="text-lg">{meal.icon}</span>
-                      <span className="text-[10px] font-medium leading-tight">{meal.label}</span>
-                      {done && <Check className="w-3 h-3 text-green-400" />}
-                    </button>
-                  );
-                })}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Collapsed bar */}
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="w-full bg-card border border-border rounded-2xl px-4 py-3 flex items-center justify-between shadow-2xl shadow-black/50 hover:border-primary/30 transition-all"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5">
-              <Droplets className={`w-4 h-4 ${waterPct >= 100 ? "text-green-400" : "text-blue-400"}`} />
-              <span className="text-xs font-semibold">{glasses}💧</span>
+        {/* Main bar: water +/- + meals toggle */}
+        <div className="bg-card border border-border rounded-2xl px-3 py-2.5 shadow-2xl shadow-black/50 flex items-center gap-2">
+          {/* Water section */}
+          <div className="flex items-center gap-1.5 flex-1 min-w-0">
+            <Droplets className={`w-4 h-4 flex-shrink-0 ${waterPct >= 100 ? "text-green-400" : "text-blue-400"}`} />
+            <button
+              onClick={removeWater}
+              disabled={currentMl <= 0}
+              className="w-8 h-8 rounded-lg bg-secondary hover:bg-blue-500/15 flex items-center justify-center transition-colors active:scale-95 disabled:opacity-30 disabled:pointer-events-none flex-shrink-0"
+            >
+              <Minus className="w-3.5 h-3.5 text-muted-foreground" />
+            </button>
+            <div className="flex-1 min-w-0">
+              <div className="bg-secondary rounded-full h-2 overflow-hidden">
+                <div
+                  className="h-2 rounded-full bg-blue-500 transition-all duration-300"
+                  style={{ width: `${waterPct}%` }}
+                />
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-0.5 text-center">{glasses} glass{glasses !== 1 ? "es" : ""}</p>
             </div>
-            <div className="w-px h-4 bg-border" />
-            <div className="flex items-center gap-1.5">
-              <Beef className={`w-4 h-4 ${mealsDone >= 4 ? "text-green-400" : "text-muted-foreground"}`} />
-              <span className="text-xs font-semibold">{mealsDone}/4</span>
-            </div>
+            <button
+              onClick={addWater}
+              className="w-8 h-8 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 flex items-center justify-center transition-colors active:scale-95 flex-shrink-0"
+            >
+              <Plus className="w-3.5 h-3.5 text-blue-400" />
+            </button>
           </div>
-          <motion.div
-            animate={{ rotate: expanded ? 180 : 0 }}
-            transition={{ duration: 0.2 }}
-            className="text-muted-foreground"
+
+          {/* Divider */}
+          <div className="w-px h-8 bg-border flex-shrink-0" />
+
+          {/* Meals toggle */}
+          <button
+            onClick={() => setShowMeals(!showMeals)}
+            className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all active:scale-95 flex-shrink-0 ${
+              showMeals ? "bg-green-500/10" : "hover:bg-secondary"
+            }`}
           >
-            <ChevronUp className="w-4 h-4" />
-          </motion.div>
-        </button>
+            <Beef className={`w-4 h-4 ${mealsDone >= 4 ? "text-green-400" : "text-muted-foreground"}`} />
+            <span className="text-xs font-semibold">{mealsDone}/4</span>
+            <motion.div
+              animate={{ rotate: showMeals ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ChevronUp className="w-3.5 h-3.5 text-muted-foreground" />
+            </motion.div>
+          </button>
+        </div>
       </div>
     </div>
   );
