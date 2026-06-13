@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { POSITION_LABELS } from "@/lib/gameData";
 import { motion } from "framer-motion";
+import NutritionCoachChat from "@/components/agents/NutritionCoachChat";
 
 export default function Nutrition() {
   const [mealPlan, setMealPlan] = useState(null);
@@ -278,6 +279,15 @@ Focus on real, practical foods that a ${profile.age}-year-old would actually eat
             </Button>
           </div>
         )}
+
+        {/* Nutrition Coach Agent */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl bg-card border border-green-500/20 p-5"
+        >
+          <NutritionCoachChat profile={profile} />
+        </motion.div>
       </div>
     </div>
   );
