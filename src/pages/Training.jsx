@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Dumbbell, Clock, Flame, Calendar, ChevronRight, Zap, Target, Shield, Footprints, Save } from "lucide-react";
+import { Loader2, Dumbbell, Clock, Flame, Calendar, ChevronRight, Zap, Target, Shield, Footprints, Save, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { POSITION_LABELS } from "@/lib/gameData";
@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import TrainingPlanGenerator from "@/components/training/TrainingPlanGenerator";
 import TrainingCalendar from "@/components/training/TrainingCalendar";
 import TrainingTemplates from "@/components/training/TrainingTemplates";
+import WarmUpGenerator from "@/components/training/WarmUpGenerator";
 import FitnessTrainerChat from "@/components/agents/FitnessTrainerChat";
 
 const TRAINING_CATEGORIES = {
@@ -123,7 +124,7 @@ function DrillCard({ drill, index }) {
 export default function Training() {
   const [activeTab, setActiveTab] = useState("technical");
   const [showPlan, setShowPlan] = useState(false);
-  const [viewMode, setViewMode] = useState("drills"); // "drills" | "calendar" | "templates"
+  const [viewMode, setViewMode] = useState("drills"); // "drills" | "calendar" | "templates" | "warmup"
 
   const { data: profiles, isLoading } = useQuery({
     queryKey: ["profiles"],
@@ -195,6 +196,17 @@ export default function Training() {
                 <Save className="w-3.5 h-3.5 inline mr-1" />
                 Templates
               </button>
+              <button
+                onClick={() => { setViewMode("warmup"); setShowPlan(false); }}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  viewMode === "warmup"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Timer className="w-3.5 h-3.5 inline mr-1" />
+                Warm-Up
+              </button>
             </div>
             {viewMode === "drills" && (
               <Button
@@ -213,6 +225,8 @@ export default function Training() {
           <TrainingCalendar profile={profile} dailyLogs={dailyLogs} />
         ) : viewMode === "templates" ? (
           <TrainingTemplates profile={profile} trainingCategories={TRAINING_CATEGORIES} level={level} />
+        ) : viewMode === "warmup" ? (
+          <WarmUpGenerator profile={profile} />
         ) : showPlan ? (
           <TrainingPlanGenerator profile={profile} />
         ) : (
