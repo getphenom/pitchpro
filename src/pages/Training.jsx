@@ -291,7 +291,8 @@ export default function Training() {
           drill={selectedDrill}
           category={selectedCategory}
           profile={profile}
-          favorites={profile?.favorite_drills || []}
+          allDrills={TRAINING_CATEGORIES[selectedCategory]?.drills[level] || []}
+          onSwap={(alt) => { setSelectedDrill(alt); }}
         />
 
         {viewMode === "calendar" ? (

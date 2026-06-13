@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Sparkles, Bed, Dumbbell, Wind, Thermometer, Droplets, Timer, ChevronDown, ChevronUp, CheckCircle2, BookOpen, Moon, Activity, Footprints, RefreshCw } from "lucide-react";
+import { Loader2, Sparkles, Bed, Dumbbell, Wind, Thermometer, Droplets, Timer, ChevronDown, ChevronUp, CheckCircle2, BookOpen, Moon, Activity, Footprints } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { POSITION_LABELS } from "@/lib/gameData";
 import { motion, AnimatePresence } from "framer-motion";
-import TutorialModal from "@/components/shared/TutorialModal";
-import SwapDialog from "@/components/shared/SwapDialog";
+import RecoveryDetailDialog from "@/components/recovery/RecoveryDetailDialog";
 import { format } from "date-fns";
 
 const today = format(new Date(), "yyyy-MM-dd");
@@ -96,8 +95,8 @@ export default function Recovery() {
   const [recoveryPlan, setRecoveryPlan] = useState(null);
   const [expandedCat, setExpandedCat] = useState(null);
   const [completedExercises, setCompletedExercises] = useState({});
-  const [tutorialItem, setTutorialItem] = useState(null);
-  const [swapItem, setSwapItem] = useState(null);
+  const [selectedExercise, setSelectedExercise] = useState(null);
+  const [currentCategoryExercises, setCurrentCategoryExercises] = useState([]);
 
   const { data: profiles, isLoading: loadingProfile } = useQuery({
     queryKey: ["profiles"],
@@ -245,21 +244,13 @@ Create a plan with:
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-2xl mx-auto px-4 py-6 pb-28 space-y-6">
-        <TutorialModal
-          open={!!tutorialItem}
-          onClose={() => setTutorialItem(null)}
-          item={tutorialItem}
-          context={`This is a recovery exercise for a ${profile.age}-year-old soccer player. Explain proper form, common mistakes, and how it aids recovery.`}
-          triggerLabel={tutorialItem?.name || tutorialItem?.exercise || "Recovery Tutorial"}
-        />
-
-        <SwapDialog
-          open={!!swapItem}
-          onClose={() => setSwapItem(null)}
-          item={swapItem}
-          itemType="recovery"
-          context={`${profile.age}-year-old ${POSITION_LABELS[profile.position]}, recovery`}
-          onSwap={() => setSwapItem(null)}
+        <RecoveryDetailDialog
+          open={!!selectedExercise}
+          onClose={() => setSelectedExercise(null)}
+          exercise={selectedExercise}
+          profile={profile}
+          allExercises={currentCategoryExercises}
+          onSwap={(alt) => setSelectedExercise(alt)}
         />
 
         {/* Header */}
@@ -354,7 +345,7 @@ Create a plan with:
               <div className="rounded-xl bg-card border border-border p-4">
                 <h4 className="font-semibold text-sm mb-3">🥗 Post-Training Nutrition</h4>
                 {recoveryPlan.nutrition_recovery?.map((n, i) => (
-                  <div key={i} className="mb-3 last:mb-0 pb-3 last:pb-0 border-b last:border-0 border-border group">
+                  <div key={i} className="mb-3 last:mb-0 pb-3 last:pb-0 border-b last:border-0 border-border">
                     <p className="text-xs font-semibold text-primary">{n.timing}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{n.guidance}</p>
                     <div className="flex flex-wrap gap-1 mt-1">
@@ -362,12 +353,6 @@ Create a plan with:
                         <span key={j} className="text-[10px] bg-secondary px-1.5 py-0.5 rounded-md">{ex}</span>
                       ))}
                     </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setSwapItem({ ...n, name: n.timing }); }}
-                      className="text-[10px] text-muted-foreground hover:text-teal-400 transition-colors flex items-center gap-0.5 mt-1"
-                    >
-                      <RefreshCw className="w-3 h-3" /> Swap
-                    </button>
                   </div>
                 ))}
               </div>
@@ -376,7 +361,7 @@ Create a plan with:
               <div className="rounded-xl bg-card border border-border p-4">
                 <h4 className="font-semibold text-sm mb-3">🧘 Personalized Stretching Routine</h4>
                 {recoveryPlan.stretching_routine?.map((stretch, i) => (
-                  <div key={i} className="flex items-start gap-3 mb-2 pb-2 border-b last:border-0 border-border group">
+                  <div key={i} className="flex items-start gap-3 mb-2 pb-2 border-b last:border-0 border-border">
                     <div className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
                       <span className="text-xs font-bold text-blue-400">{i + 1}</span>
                     </div>
@@ -386,12 +371,6 @@ Create a plan with:
                         <span className="text-[10px] text-muted-foreground">{stretch.duration}</span>
                       </div>
                       <p className="text-[10px] text-muted-foreground">{stretch.instructions}</p>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setSwapItem({ ...stretch, name: stretch.exercise, duration: stretch.duration }); }}
-                        className="text-[10px] text-muted-foreground hover:text-teal-400 transition-colors flex items-center gap-0.5 mt-1"
-                      >
-                        <RefreshCw className="w-3 h-3" /> Swap
-                      </button>
                     </div>
                   </div>
                 ))}
@@ -514,7 +493,7 @@ Create a plan with:
                                 {done && <CheckCircle2 className="w-3 h-3 text-white" />}
                               </div>
                               <div
-                                onClick={() => setTutorialItem(ex)}
+                                onClick={() => { setSelectedExercise(ex); setCurrentCategoryExercises(cat.exercises); }}
                                 className="flex-1 min-w-0"
                               >
                                 <p className={`text-sm ${done ? "line-through text-muted-foreground" : "font-medium"}`}>
@@ -525,17 +504,9 @@ Create a plan with:
                                   <span>·</span>
                                   <Footprints className="w-3 h-3" /> {ex.target}
                                 </div>
-                                <div className="flex items-center gap-2 mt-0.5">
-                                  <button
-                                    onClick={(e) => { e.stopPropagation(); setSwapItem(ex); }}
-                                    className="text-[10px] text-muted-foreground hover:text-teal-400 transition-colors flex items-center gap-0.5"
-                                  >
-                                    <RefreshCw className="w-3 h-3" /> Swap
-                                  </button>
-                                  <span className="text-[10px] text-muted-foreground group-hover:text-teal-400 transition-colors inline-flex items-center gap-0.5">
-                                    <BookOpen className="w-3 h-3" /> Tutorial
-                                  </span>
-                                </div>
+                                <span className="text-[10px] text-muted-foreground mt-0.5 group-hover:text-teal-400 transition-colors inline-flex items-center gap-0.5">
+                                  <BookOpen className="w-3 h-3" /> Tap for tutorial
+                                </span>
                               </div>
                             </div>
                           );
