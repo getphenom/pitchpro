@@ -16,7 +16,7 @@ import WeeklySummary from "@/components/home/WeeklySummary";
 import DashboardCharts from "@/components/home/DashboardCharts";
 import { POSITION_LABELS, BADGES, getLevel, LEVEL_TITLES } from "@/lib/gameData";
 import { checkBadges } from "@/lib/badgeChecker";
-import { Loader2, Trophy, TrendingUp, Sparkles } from "lucide-react";
+import { Loader2, Trophy, TrendingUp, Sparkles, LayoutDashboard, ListChecks } from "lucide-react";
 import { motion } from "framer-motion";
 
 const today = format(new Date(), "yyyy-MM-dd");
@@ -58,6 +58,7 @@ export default function Home() {
     enabled: !!profile,
   });
 
+  const [view, setView] = useState("summary");
   const [newBadges, setNewBadges] = useState([]);
 
   // Auto-snapshot current stats for this week
@@ -183,6 +184,30 @@ export default function Home() {
           <StreakBanner streak={profile.streak_days || 0} />
         </motion.div>
 
+        {/* View Toggle */}
+        <div className="flex rounded-xl bg-secondary p-1 gap-1">
+          <button
+            onClick={() => setView("summary")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold transition-all ${
+              view === "summary"
+                ? "bg-card shadow-sm text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <LayoutDashboard className="w-3.5 h-3.5" /> Summary
+          </button>
+          <button
+            onClick={() => setView("quests")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold transition-all ${
+              view === "quests"
+                ? "bg-card shadow-sm text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <ListChecks className="w-3.5 h-3.5" /> Today's Quests
+          </button>
+        </div>
+
         {/* New Badge Celebration */}
         {newBadges.length > 0 && (
           <motion.div
@@ -208,84 +233,69 @@ export default function Home() {
           </motion.div>
         )}
 
-        {/* Evening Reminder */}
-        <DailyReminder dailyLog={dailyLog} profile={profile} />
+        {/* === SUMMARY VIEW === */}
+        {view === "summary" && (
+          <>
+            <DailyReminder dailyLog={dailyLog} profile={profile} />
 
-        {/* Quick Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="grid grid-cols-3 gap-3"
-        >
-          <div className="rounded-xl bg-card border border-border p-3 text-center">
-            <p className="text-2xl font-heading font-bold text-primary">{dailyLog?.quests_completed?.length || 0}</p>
-            <p className="text-[10px] text-muted-foreground mt-1">Quests Done</p>
-          </div>
-          <div className="rounded-xl bg-card border border-border p-3 text-center">
-            <p className="text-2xl font-heading font-bold text-blue-400">{Math.floor((dailyLog?.water_ml || 0) / 250)}</p>
-            <p className="text-[10px] text-muted-foreground mt-1">Glasses</p>
-          </div>
-          <div className="rounded-xl bg-card border border-border p-3 text-center">
-            <p className="text-2xl font-heading font-bold text-accent">{dailyLog?.xp_earned_today || 0}</p>
-            <p className="text-[10px] text-muted-foreground mt-1">XP Today</p>
-          </div>
-        </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="grid grid-cols-3 gap-3"
+            >
+              <div className="rounded-xl bg-card border border-border p-3 text-center">
+                <p className="text-2xl font-heading font-bold text-primary">{dailyLog?.quests_completed?.length || 0}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">Quests Done</p>
+              </div>
+              <div className="rounded-xl bg-card border border-border p-3 text-center">
+                <p className="text-2xl font-heading font-bold text-blue-400">{Math.floor((dailyLog?.water_ml || 0) / 250)}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">Glasses</p>
+              </div>
+              <div className="rounded-xl bg-card border border-border p-3 text-center">
+                <p className="text-2xl font-heading font-bold text-accent">{dailyLog?.xp_earned_today || 0}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">XP Today</p>
+              </div>
+            </motion.div>
 
-        {/* Readiness Score */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}>
-          <ReadinessScore dailyLog={dailyLog} profile={profile} />
-        </motion.div>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}>
+              <ReadinessScore dailyLog={dailyLog} profile={profile} />
+            </motion.div>
 
-        {/* Water Tracker */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <WaterTracker
-            currentMl={dailyLog?.water_ml || 0}
-            age={profile.age}
-            weight={profile.weight_kg}
-            onUpdate={handleWaterUpdate}
-          />
-        </motion.div>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+              <WaterTracker
+                currentMl={dailyLog?.water_ml || 0}
+                age={profile.age}
+                weight={profile.weight_kg}
+                onUpdate={handleWaterUpdate}
+              />
+            </motion.div>
 
-        {/* Daily Quests */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <DailyQuests
-            profile={profile}
-            dailyLog={dailyLog}
-            onQuestComplete={handleQuestComplete}
-          />
-        </motion.div>
+            <PerformanceFeedback profile={profile} snapshots={snapshots} dailyLog={dailyLog} />
 
-        {/* AI Performance Feedback */}
-        <PerformanceFeedback profile={profile} snapshots={snapshots} dailyLog={dailyLog} />
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+              className="rounded-xl bg-card border border-border p-4"
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <TrendingUp className="w-4 h-4 text-primary" />
+                <h3 className="font-heading font-bold text-sm tracking-wider uppercase text-muted-foreground">
+                  Weekly Progress
+                </h3>
+              </div>
+              <WeeklyProgress
+                currentStats={profile.stats || {}}
+                snapshots={snapshots}
+              />
+            </motion.div>
 
-        {/* Weekly Stats Progress */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          className="rounded-xl bg-card border border-border p-4"
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-4 h-4 text-primary" />
-            <h3 className="font-heading font-bold text-sm tracking-wider uppercase text-muted-foreground">
-              Weekly Progress
-            </h3>
-          </div>
-          <WeeklyProgress
-            currentStats={profile.stats || {}}
-            snapshots={snapshots}
-          />
-        </motion.div>
+            <DashboardCharts profile={profile} />
 
-        {/* Dashboard Charts */}
-        <DashboardCharts profile={profile} />
+            <WeeklySummary profile={profile} />
 
-        {/* Weekly Summary */}
-        <WeeklySummary profile={profile} />
-
-        {/* Recent Badges */}
-        {profile.badges?.length > 0 && (
+            {profile.badges?.length > 0 && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
             <h3 className="font-heading font-bold text-sm tracking-wider uppercase text-muted-foreground mb-3">
               Badges
@@ -309,6 +319,55 @@ export default function Home() {
               })}
             </div>
           </motion.div>
+        )}
+          </>
+        )}
+
+        {/* === QUESTS VIEW === */}
+        {view === "quests" && (
+          <>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="grid grid-cols-3 gap-3"
+            >
+              <div className="rounded-xl bg-card border border-border p-3 text-center">
+                <p className="text-2xl font-heading font-bold text-primary">{dailyLog?.quests_completed?.length || 0}/6</p>
+                <p className="text-[10px] text-muted-foreground mt-1">Completed</p>
+              </div>
+              <div className="rounded-xl bg-card border border-border p-3 text-center">
+                <p className="text-2xl font-heading font-bold text-accent">{dailyLog?.xp_earned_today || 0}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">XP Today</p>
+              </div>
+              <div className="rounded-xl bg-card border border-border p-3 text-center">
+                <p className="text-2xl font-heading font-bold text-blue-400">{Math.floor((dailyLog?.water_ml || 0) / 250)}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">Glasses</p>
+              </div>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+              <WaterTracker
+                currentMl={dailyLog?.water_ml || 0}
+                age={profile.age}
+                weight={profile.weight_kg}
+                onUpdate={handleWaterUpdate}
+              />
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+              <DailyQuests
+                profile={profile}
+                dailyLog={dailyLog}
+                onQuestComplete={handleQuestComplete}
+              />
+            </motion.div>
+
+            <DailyReminder dailyLog={dailyLog} profile={profile} />
+
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+              <ReadinessScore dailyLog={dailyLog} profile={profile} />
+            </motion.div>
+          </>
         )}
       </div>
 
