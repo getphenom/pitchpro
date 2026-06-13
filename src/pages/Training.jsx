@@ -10,6 +10,7 @@ import TrainingPlanGenerator from "@/components/training/TrainingPlanGenerator";
 import TrainingCalendar from "@/components/training/TrainingCalendar";
 import TrainingTemplates from "@/components/training/TrainingTemplates";
 import WarmUpGenerator from "@/components/training/WarmUpGenerator";
+import TrainingSchedule from "@/components/training/TrainingSchedule";
 import FitnessTrainerChat from "@/components/agents/FitnessTrainerChat";
 
 const TRAINING_CATEGORIES = {
@@ -124,7 +125,7 @@ function DrillCard({ drill, index }) {
 export default function Training() {
   const [activeTab, setActiveTab] = useState("technical");
   const [showPlan, setShowPlan] = useState(false);
-  const [viewMode, setViewMode] = useState("drills"); // "drills" | "calendar" | "templates" | "warmup"
+  const [viewMode, setViewMode] = useState("drills"); // "drills" | "calendar" | "templates" | "warmup" | "schedule"
 
   const { data: profiles, isLoading } = useQuery({
     queryKey: ["profiles"],
@@ -207,6 +208,17 @@ export default function Training() {
                 <Timer className="w-3.5 h-3.5 inline mr-1" />
                 Warm-Up
               </button>
+              <button
+                onClick={() => { setViewMode("schedule"); setShowPlan(false); }}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  viewMode === "schedule"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Clock className="w-3.5 h-3.5 inline mr-1" />
+                Schedule
+              </button>
             </div>
             {viewMode === "drills" && (
               <Button
@@ -227,6 +239,8 @@ export default function Training() {
           <TrainingTemplates profile={profile} trainingCategories={TRAINING_CATEGORIES} level={level} />
         ) : viewMode === "warmup" ? (
           <WarmUpGenerator profile={profile} />
+        ) : viewMode === "schedule" ? (
+          <TrainingSchedule profile={profile} />
         ) : showPlan ? (
           <TrainingPlanGenerator profile={profile} />
         ) : (
