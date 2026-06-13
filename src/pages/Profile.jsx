@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Edit2, Save, LogOut, Trophy, Flame, Star, Award } from "lucide-react";
+import { Loader2, Edit2, Save, LogOut, Trophy, Flame, Star, Award, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,12 +10,14 @@ import XpBar from "@/components/shared/XpBar";
 import StatRadar from "@/components/shared/StatRadar";
 import TrophyCase from "@/components/profile/TrophyCase";
 import { POSITION_LABELS, getLevel, LEVEL_TITLES, STAT_COLORS } from "@/lib/gameData";
+import { useTheme } from "@/lib/ThemeProvider";
 import { motion } from "framer-motion";
 
 export default function Profile() {
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState({});
   const queryClient = useQueryClient();
+  const { theme, toggleTheme } = useTheme();
 
   const { data: profiles, isLoading } = useQuery({
     queryKey: ["profiles"],
@@ -240,6 +242,24 @@ export default function Profile() {
             <Edit2 className="w-4 h-4 mr-2" /> Edit Profile
           </Button>
         )}
+
+        {/* Theme Toggle */}
+        <button
+          onClick={toggleTheme}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-card border border-border hover:bg-secondary/50 transition-colors"
+        >
+          {theme === "dark" ? (
+            <>
+              <Sun className="w-4 h-4 text-accent" />
+              <span className="text-sm font-medium">Switch to Light Mode</span>
+            </>
+          ) : (
+            <>
+              <Moon className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium">Switch to Dark Mode</span>
+            </>
+          )}
+        </button>
 
         <Button
           variant="ghost"
