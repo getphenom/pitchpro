@@ -12,6 +12,7 @@ import PerformanceFeedback from "@/components/home/PerformanceFeedback";
 import DailyReminder from "@/components/home/DailyReminder";
 import FloatingQuickLog from "@/components/home/FloatingQuickLog";
 import ReadinessScore from "@/components/home/ReadinessScore";
+import WeeklySummary from "@/components/home/WeeklySummary";
 import { POSITION_LABELS, BADGES, getLevel, LEVEL_TITLES } from "@/lib/gameData";
 import { Loader2, Trophy, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
@@ -228,6 +229,9 @@ export default function Home() {
             snapshots={snapshots}
           />
         </motion.div>
+
+        {/* Weekly Summary */}
+        <WeeklySummary profile={profile} />
 
         {/* Recent Badges */}
         {profile.badges?.length > 0 && (
