@@ -10,6 +10,7 @@ import StreakBanner from "@/components/home/StreakBanner";
 import WeeklyProgress from "@/components/shared/WeeklyProgress";
 import PerformanceFeedback from "@/components/home/PerformanceFeedback";
 import DailyReminder from "@/components/home/DailyReminder";
+import FloatingQuickLog from "@/components/home/FloatingQuickLog";
 import { POSITION_LABELS, BADGES, getLevel, LEVEL_TITLES } from "@/lib/gameData";
 import { Loader2, Trophy, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
@@ -102,6 +103,10 @@ export default function Home() {
     await updateLog.mutateAsync({ water_ml: ml });
   };
 
+  const handleMealUpdate = async (meals) => {
+    await updateLog.mutateAsync({ meals_logged: meals });
+  };
+
   if (loadingProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -120,7 +125,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-2xl mx-auto px-4 py-6 pb-28 space-y-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -245,6 +250,14 @@ export default function Home() {
           </motion.div>
         )}
       </div>
+
+      {/* Floating Quick-Log Bar */}
+      <FloatingQuickLog
+        dailyLog={dailyLog}
+        profile={profile}
+        onWaterUpdate={handleWaterUpdate}
+        onMealUpdate={handleMealUpdate}
+      />
     </div>
   );
 }
