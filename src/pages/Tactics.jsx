@@ -304,18 +304,19 @@ Make it practical and age-appropriate.`,
                 <div className="rounded-xl bg-card border border-border p-4">
                   <h4 className="font-semibold text-sm mb-3">⚽ Tactical Drills</h4>
                   {tacticalPlan.tactical_drills.map((drill, i) => (
-                    <div key={i} className="mb-3 last:mb-0 pb-3 last:pb-0 border-b last:border-0 border-border">
+                    <div
+                      key={i}
+                      onClick={() => setTutorialItem(drill)}
+                      className="mb-3 last:mb-0 pb-3 last:pb-0 border-b last:border-0 border-border cursor-pointer hover:border-primary/30 group"
+                    >
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium">{drill.name}</p>
+                        <p className="text-sm font-medium group-hover:text-primary transition-colors">{drill.name}</p>
                         <span className="text-xs text-muted-foreground">{drill.duration}</span>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">{drill.description}</p>
-                      <button
-                        onClick={() => setTutorialItem(drill)}
-                        className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5 mt-1"
-                      >
-                        <BookOpen className="w-3 h-3" /> How To
-                      </button>
+                      <span className="text-[10px] text-muted-foreground group-hover:text-primary transition-colors inline-flex items-center gap-0.5 mt-1">
+                        <BookOpen className="w-3 h-3" /> Tap for tutorial
+                      </span>
                     </div>
                   ))}
                 </div>

@@ -206,7 +206,8 @@ Focus on real, practical foods that a ${profile.age}-year-old would actually eat
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
-                    className="rounded-xl bg-card border border-border p-4"
+                    onClick={() => setTutorialItem(meal)}
+                    className="rounded-xl bg-card border border-border p-4 cursor-pointer hover:border-primary/30 transition-all group"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
@@ -223,12 +224,9 @@ Focus on real, practical foods that a ${profile.age}-year-old would actually eat
                     {meal.note && <p className="text-xs text-muted-foreground">{meal.note}</p>}
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-xs text-primary font-medium">{meal.calories} kcal</p>
-                      <button
-                        onClick={() => setTutorialItem(meal)}
-                        className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5"
-                      >
-                        <BookOpen className="w-3 h-3" /> How to Prepare
-                      </button>
+                      <span className="text-[10px] text-muted-foreground group-hover:text-primary transition-colors flex items-center gap-0.5">
+                        <BookOpen className="w-3 h-3" /> Tap for recipe
+                      </span>
                     </div>
                   </motion.div>
                 ))}
@@ -241,7 +239,8 @@ Focus on real, practical foods that a ${profile.age}-year-old would actually eat
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
-                    className="rounded-xl bg-card border border-border p-4"
+                    onClick={() => setTutorialItem(meal)}
+                    className="rounded-xl bg-card border border-border p-4 cursor-pointer hover:border-primary/30 transition-all group"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
@@ -258,12 +257,9 @@ Focus on real, practical foods that a ${profile.age}-year-old would actually eat
                     {meal.note && <p className="text-xs text-muted-foreground">{meal.note}</p>}
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-xs text-primary font-medium">{meal.calories} kcal</p>
-                      <button
-                        onClick={() => setTutorialItem(meal)}
-                        className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5"
-                      >
-                        <BookOpen className="w-3 h-3" /> How to Prepare
-                      </button>
+                      <span className="text-[10px] text-muted-foreground group-hover:text-primary transition-colors flex items-center gap-0.5">
+                        <BookOpen className="w-3 h-3" /> Tap for recipe
+                      </span>
                     </div>
                   </motion.div>
                 ))}

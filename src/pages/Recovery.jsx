@@ -476,21 +476,24 @@ Create a plan with:
                           return (
                             <div
                               key={ei}
-                              onClick={() => toggleExercise(ci, ei)}
-                              className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                              className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer group ${
                                 done
                                   ? "bg-teal-500/10 border-teal-500/20"
                                   : "bg-secondary/30 border-border hover:border-teal-500/30"
                               }`}
                             >
                               <div
-                                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                                onClick={() => toggleExercise(ci, ei)}
+                                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 cursor-pointer ${
                                   done ? "bg-teal-500 border-teal-500" : "border-muted-foreground/30"
                                 }`}
                               >
                                 {done && <CheckCircle2 className="w-3 h-3 text-white" />}
                               </div>
-                              <div className="flex-1 min-w-0">
+                              <div
+                                onClick={() => setTutorialItem(ex)}
+                                className="flex-1 min-w-0"
+                              >
                                 <p className={`text-sm ${done ? "line-through text-muted-foreground" : "font-medium"}`}>
                                   {ex.name}
                                 </p>
@@ -499,13 +502,10 @@ Create a plan with:
                                   <span>·</span>
                                   <Footprints className="w-3 h-3" /> {ex.target}
                                 </div>
+                                <span className="text-[10px] text-muted-foreground mt-0.5 group-hover:text-teal-400 transition-colors inline-flex items-center gap-0.5">
+                                  <BookOpen className="w-3 h-3" /> Tap for tutorial
+                                </span>
                               </div>
-                              <button
-                                onClick={(e) => { e.stopPropagation(); setTutorialItem(ex); }}
-                                className="text-[10px] text-muted-foreground hover:text-teal-400 transition-colors flex items-center gap-0.5"
-                              >
-                                <BookOpen className="w-3 h-3" /> How To
-                              </button>
                             </div>
                           );
                         })}

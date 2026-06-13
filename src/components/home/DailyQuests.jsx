@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { useState } from "react";
 import QuestCard from "@/components/shared/QuestCard";
+import ItemDetailDialog from "@/components/shared/ItemDetailDialog";
 import { POSITION_LABELS } from "@/lib/gameData";
-import { Loader2 } from "lucide-react";
 
 function generateQuests(profile) {
   const pos = profile.position;
@@ -56,6 +55,7 @@ function generateQuests(profile) {
 }
 
 export default function DailyQuests({ profile, dailyLog, onQuestComplete }) {
+  const [selectedQuest, setSelectedQuest] = useState(null);
   const quests = generateQuests(profile);
 
   const completedIds = dailyLog?.quests_completed || [];
@@ -69,6 +69,12 @@ export default function DailyQuests({ profile, dailyLog, onQuestComplete }) {
 
   return (
     <div className="space-y-3">
+      <ItemDetailDialog
+        open={!!selectedQuest}
+        onClose={() => setSelectedQuest(null)}
+        item={selectedQuest}
+        onAction={(quest) => onQuestComplete(quest)}
+      />
       <div className="flex items-center justify-between">
         <h3 className="font-heading font-bold text-sm tracking-wider uppercase text-muted-foreground">
           Daily Quests
@@ -80,7 +86,7 @@ export default function DailyQuests({ profile, dailyLog, onQuestComplete }) {
           <QuestCard
             key={quest.id}
             quest={quest}
-            onComplete={() => onQuestComplete(quest)}
+            onPress={() => setSelectedQuest(quest)}
           />
         ))}
       </div>

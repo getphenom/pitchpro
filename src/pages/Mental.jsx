@@ -238,24 +238,21 @@ Make it relatable and inspiring for a young player.`,
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
               onClick={() => setActiveExercise(ex.id)}
-              className={`rounded-xl border bg-gradient-to-br p-4 cursor-pointer hover:scale-[1.01] transition-all ${ex.color}`}
+              className={`rounded-xl border bg-gradient-to-br p-4 cursor-pointer hover:scale-[1.01] transition-all group ${ex.color}`}
             >
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{ex.icon}</span>
                 <div className="flex-1">
                   <h4 className="font-semibold text-sm">{ex.title}</h4>
                   <p className="text-xs text-muted-foreground mt-0.5">{ex.description.slice(0, 80)}...</p>
+                  <span className="text-[10px] text-muted-foreground mt-0.5 group-hover:text-primary transition-colors inline-flex items-center gap-0.5">
+                    <BookOpen className="w-3 h-3" /> Tap for step-by-step
+                  </span>
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   <span className="text-xs text-muted-foreground">{ex.duration}</span>
                   <span className="text-xs text-accent font-semibold">+{ex.xp} XP</span>
                 </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setTutorialItem(ex); }}
-                  className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5 mt-2"
-                >
-                  <BookOpen className="w-3 h-3" /> How To
-                </button>
               </div>
             </motion.div>
           ))}

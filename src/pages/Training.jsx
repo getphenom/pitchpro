@@ -102,7 +102,8 @@ function DrillCard({ drill, index, onTutorial }) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
-      className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border hover:border-primary/30 transition-all group"
+      onClick={() => onTutorial?.(drill)}
+      className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border hover:border-primary/30 transition-all cursor-pointer group"
     >
       <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
         <Zap className="w-5 h-5 text-primary" />
@@ -110,6 +111,9 @@ function DrillCard({ drill, index, onTutorial }) {
       <div className="flex-1 min-w-0">
         <h4 className="font-semibold text-sm">{drill.name}</h4>
         <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{drill.desc}</p>
+        <span className="text-[10px] text-muted-foreground mt-1 group-hover:text-primary transition-colors inline-flex items-center gap-0.5">
+          <BookOpen className="w-3 h-3" /> Tap for tutorial
+        </span>
       </div>
       <div className="flex flex-col items-end gap-1 flex-shrink-0">
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -120,12 +124,6 @@ function DrillCard({ drill, index, onTutorial }) {
           <Flame className="w-3 h-3" />
           {drill.xp} XP
         </div>
-        <button
-          onClick={(e) => { e.stopPropagation(); onTutorial?.(drill); }}
-          className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5 opacity-0 group-hover:opacity-100"
-        >
-          <BookOpen className="w-3 h-3" /> How To
-        </button>
       </div>
     </motion.div>
   );

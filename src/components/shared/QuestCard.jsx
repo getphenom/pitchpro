@@ -1,7 +1,7 @@
 import { Check, Star, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 
-export default function QuestCard({ quest, onComplete, disabled = false }) {
+export default function QuestCard({ quest, onPress, disabled = false }) {
   const { title, description, xp, category, completed, icon } = quest;
 
   const categoryColors = {
@@ -20,7 +20,7 @@ export default function QuestCard({ quest, onComplete, disabled = false }) {
       className={`relative rounded-xl border bg-gradient-to-br p-4 transition-all cursor-pointer
         ${completed ? "opacity-60 border-primary/30 from-primary/10 to-primary/5" : categoryColors[category] || categoryColors.training}
         ${disabled ? "opacity-40 pointer-events-none" : ""}`}
-      onClick={() => !disabled && onComplete?.()}
+      onClick={() => !disabled && onPress?.()}
     >
       <div className="flex items-start gap-3">
         <div className={`text-2xl ${completed ? "grayscale" : ""}`}>
