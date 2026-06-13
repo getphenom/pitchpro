@@ -19,8 +19,9 @@ export default function Onboarding() {
     position: "",
     skill_level: "",
     preferred_foot: "right",
-    height_cm: "",
-    weight_kg: "",
+    height_ft: "",
+    height_in: "",
+    weight_lbs: "",
     weekly_training_days: 5,
   });
   const [saving, setSaving] = useState(false);
@@ -36,11 +37,16 @@ export default function Onboarding() {
 
   const handleFinish = async () => {
     setSaving(true);
+    const heightCm = (form.height_ft || form.height_in)
+      ? Math.round((Number(form.height_ft || 0) * 30.48) + (Number(form.height_in || 0) * 2.54))
+      : undefined;
+    const weightKg = form.weight_lbs ? Math.round(Number(form.weight_lbs) * 0.453592) : undefined;
+
     const profileData = {
       ...form,
       age: Number(form.age),
-      height_cm: form.height_cm ? Number(form.height_cm) : undefined,
-      weight_kg: form.weight_kg ? Number(form.weight_kg) : undefined,
+      height_cm: heightCm,
+      weight_kg: weightKg,
       xp: 50,
       level: 1,
       streak_days: 0,
@@ -188,22 +194,41 @@ export default function Onboarding() {
                 <p className="text-xs text-muted-foreground">Optional — helps personalize nutrition & hydration</p>
                 <div className="space-y-4">
                   <div>
-                    <Label className="text-xs text-muted-foreground">Height (cm)</Label>
-                    <Input
-                      type="number"
-                      placeholder="e.g. 165"
-                      value={form.height_cm}
-                      onChange={(e) => update("height_cm", e.target.value)}
-                      className="mt-1 bg-secondary border-border"
-                    />
+                    <Label className="text-xs text-muted-foreground">Height</Label>
+                    <div className="grid grid-cols-2 gap-2 mt-1">
+                      <div className="relative">
+                        <Input
+                          type="number"
+                          placeholder="5"
+                          min={1}
+                          max={7}
+                          value={form.height_ft}
+                          onChange={(e) => update("height_ft", e.target.value)}
+                          className="bg-secondary border-border pr-10"
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">ft</span>
+                      </div>
+                      <div className="relative">
+                        <Input
+                          type="number"
+                          placeholder="6"
+                          min={0}
+                          max={11}
+                          value={form.height_in}
+                          onChange={(e) => update("height_in", e.target.value)}
+                          className="bg-secondary border-border pr-10"
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">in</span>
+                      </div>
+                    </div>
                   </div>
                   <div>
-                    <Label className="text-xs text-muted-foreground">Weight (kg)</Label>
+                    <Label className="text-xs text-muted-foreground">Weight (lbs)</Label>
                     <Input
                       type="number"
-                      placeholder="e.g. 55"
-                      value={form.weight_kg}
-                      onChange={(e) => update("weight_kg", e.target.value)}
+                      placeholder="e.g. 120"
+                      value={form.weight_lbs}
+                      onChange={(e) => update("weight_lbs", e.target.value)}
                       className="mt-1 bg-secondary border-border"
                     />
                   </div>

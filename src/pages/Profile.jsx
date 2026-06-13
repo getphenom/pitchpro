@@ -31,14 +31,20 @@ export default function Profile() {
     },
   });
 
+  const cmHeight = profile.height_cm || 0;
+  const displayFt = Math.floor(cmHeight / 30.48);
+  const displayIn = Math.round((cmHeight % 30.48) / 2.54);
+  const displayLbs = profile.weight_kg ? Math.round(profile.weight_kg / 0.453592) : null;
+
   const handleEdit = () => {
     setEditData({
       player_name: profile.player_name,
       age: profile.age,
       position: profile.position,
       skill_level: profile.skill_level,
-      height_cm: profile.height_cm || "",
-      weight_kg: profile.weight_kg || "",
+      height_ft: cmHeight ? String(Math.floor(cmHeight / 30.48)) : "",
+      height_in: cmHeight ? String(Math.round((cmHeight % 30.48) / 2.54)) : "",
+      weight_lbs: profile.weight_kg ? String(Math.round(profile.weight_kg / 0.453592)) : "",
       preferred_foot: profile.preferred_foot || "right",
       weekly_training_days: profile.weekly_training_days || 5,
     });
@@ -46,11 +52,16 @@ export default function Profile() {
   };
 
   const handleSave = () => {
+    const heightCm = (editData.height_ft || editData.height_in)
+      ? Math.round((Number(editData.height_ft || 0) * 30.48) + (Number(editData.height_in || 0) * 2.54))
+      : undefined;
+    const weightKg = editData.weight_lbs ? Math.round(Number(editData.weight_lbs) * 0.453592) : undefined;
+
     updateProfile.mutate({
       ...editData,
       age: Number(editData.age),
-      height_cm: editData.height_cm ? Number(editData.height_cm) : undefined,
-      weight_kg: editData.weight_kg ? Number(editData.weight_kg) : undefined,
+      height_cm: heightCm,
+      weight_kg: weightKg,
     });
   };
 
@@ -84,6 +95,8 @@ export default function Profile() {
           <p className="text-sm text-primary font-medium mt-1">{title}</p>
           <p className="text-xs text-muted-foreground mt-1">
             {POSITION_LABELS[profile.position]} · {profile.age} years old
+            {displayFt > 0 && ` · ${displayFt}ft ${displayIn}in`}
+            {displayLbs && ` · ${displayLbs} lbs`}
           </p>
           <div className="mt-4">
             <XpBar xp={profile.xp || 0} />
@@ -204,20 +217,36 @@ export default function Profile() {
                 </Select>
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground">Height (cm)</Label>
-                <Input
-                  type="number"
-                  value={editData.height_cm}
-                  onChange={(e) => setEditData({ ...editData, height_cm: e.target.value })}
-                  className="mt-1 bg-secondary"
-                />
+                <Label className="text-xs text-muted-foreground">Height</Label>
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      placeholder="ft"
+                      value={editData.height_ft}
+                      onChange={(e) => setEditData({ ...editData, height_ft: e.target.value })}
+                      className="bg-secondary pr-10"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">ft</span>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      placeholder="in"
+                      value={editData.height_in}
+                      onChange={(e) => setEditData({ ...editData, height_in: e.target.value })}
+                      className="bg-secondary pr-10"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">in</span>
+                  </div>
+                </div>
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground">Weight (kg)</Label>
+                <Label className="text-xs text-muted-foreground">Weight (lbs)</Label>
                 <Input
                   type="number"
-                  value={editData.weight_kg}
-                  onChange={(e) => setEditData({ ...editData, weight_kg: e.target.value })}
+                  value={editData.weight_lbs}
+                  onChange={(e) => setEditData({ ...editData, weight_lbs: e.target.value })}
                   className="mt-1 bg-secondary"
                 />
               </div>
