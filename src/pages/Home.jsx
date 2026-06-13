@@ -9,6 +9,7 @@ import DailyQuests from "@/components/home/DailyQuests";
 import StreakBanner from "@/components/home/StreakBanner";
 import WeeklyProgress from "@/components/shared/WeeklyProgress";
 import PerformanceFeedback from "@/components/home/PerformanceFeedback";
+import DailyReminder from "@/components/home/DailyReminder";
 import { POSITION_LABELS, BADGES, getLevel, LEVEL_TITLES } from "@/lib/gameData";
 import { Loader2, Trophy, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
@@ -151,6 +152,9 @@ export default function Home() {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <StreakBanner streak={profile.streak_days || 0} />
         </motion.div>
+
+        {/* Evening Reminder */}
+        <DailyReminder dailyLog={dailyLog} profile={profile} />
 
         {/* Quick Stats */}
         <motion.div

@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import XpBar from "@/components/shared/XpBar";
 import StatRadar from "@/components/shared/StatRadar";
+import TrophyCase from "@/components/profile/TrophyCase";
 import { POSITION_LABELS, BADGES, getLevel, LEVEL_TITLES, STAT_COLORS } from "@/lib/gameData";
 import { motion } from "framer-motion";
 
