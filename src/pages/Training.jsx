@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, startOfWeek } from "date-fns";
-import { Loader2, Dumbbell, Clock, Flame, Calendar, ChevronRight, Zap, Target, Shield, Footprints, Save, Timer, BookOpen, ClipboardList } from "lucide-react";
+import { Loader2, Dumbbell, Clock, Flame, Calendar, ChevronRight, Zap, Target, Shield, Footprints, Save, Timer, BookOpen, ClipboardList, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { POSITION_LABELS, getLevel } from "@/lib/gameData";
@@ -12,7 +12,7 @@ import TrainingCalendar from "@/components/training/TrainingCalendar";
 import TrainingTemplates from "@/components/training/TrainingTemplates";
 import WarmUpGenerator from "@/components/training/WarmUpGenerator";
 import TrainingSchedule from "@/components/training/TrainingSchedule";
-import TutorialModal from "@/components/shared/TutorialModal";
+import DrillDetailDialog from "@/components/training/DrillDetailDialog";
 import DrillEquipmentInfo from "@/components/training/DrillEquipmentInfo";
 import EquipmentSummary from "@/components/training/EquipmentSummary";
 import FitnessTrainerChat from "@/components/agents/FitnessTrainerChat";
@@ -98,15 +98,18 @@ const TRAINING_CATEGORIES = {
   },
 };
 
-function DrillCard({ drill, index, onTutorial, profile }) {
+function DrillCard({ drill, index, onSelect, profile, favorites }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
-      onClick={() => onTutorial?.(drill)}
-      className="p-4 rounded-xl bg-card border border-border hover:border-primary/30 transition-all cursor-pointer group"
+      onClick={() => onSelect?.(drill)}
+      className="p-4 rounded-xl bg-card border border-border hover:border-primary/30 transition-all cursor-pointer group relative"
     >
+      {favorites?.includes(drill.name) && (
+        <Star className="w-3.5 h-3.5 text-accent fill-accent absolute top-3 right-3" />
+      )}
       <div className="flex items-start gap-4 mb-2">
         <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0 mt-0.5">
           <Zap className="w-5 h-5 text-primary" />
@@ -115,7 +118,7 @@ function DrillCard({ drill, index, onTutorial, profile }) {
           <h4 className="font-semibold text-sm">{drill.name}</h4>
           <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{drill.desc}</p>
           <span className="text-[10px] text-muted-foreground mt-1 group-hover:text-primary transition-colors inline-flex items-center gap-0.5">
-            <BookOpen className="w-3 h-3" /> Tap for tutorial
+            <BookOpen className="w-3 h-3" /> Tap for details
           </span>
         </div>
         <div className="flex flex-col items-end gap-1 flex-shrink-0">
@@ -140,7 +143,9 @@ export default function Training() {
   const [activeTab, setActiveTab] = useState("technical");
   const [showPlan, setShowPlan] = useState(false);
   const [viewMode, setViewMode] = useState("drills");
-  const [tutorialItem, setTutorialItem] = useState(null);
+  const [selectedDrill, setSelectedDrill] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("technical");
+  const [showFavorites, setShowFavorites] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: profiles, isLoading } = useQuery({
@@ -280,12 +285,13 @@ export default function Training() {
           </div>
         </div>
 
-        <TutorialModal
-          open={!!tutorialItem}
-          onClose={() => setTutorialItem(null)}
-          item={tutorialItem}
-          context={`This is a ${tutorialItem?.category || "training"} drill for a ${profile ? POSITION_LABELS[profile.position] : "soccer player"} at ${level} level.`}
-          triggerLabel={tutorialItem?.name || "Tutorial"}
+        <DrillDetailDialog
+          open={!!selectedDrill}
+          onClose={() => setSelectedDrill(null)}
+          drill={selectedDrill}
+          category={selectedCategory}
+          profile={profile}
+          favorites={profile?.favorite_drills || []}
         />
 
         {viewMode === "calendar" ? (
@@ -303,31 +309,101 @@ export default function Training() {
         ) : (
           <>
             <EquipmentSummary profileId={profile?.id} />
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="w-full bg-secondary">
-                {Object.entries(TRAINING_CATEGORIES).map(([key, cat]) => (
-                  <TabsTrigger key={key} value={key} className="flex-1 text-xs">
-                    <span className="mr-1">{cat.icon}</span> {cat.label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+            
+            {/* Favorites toggle */}
+            <div className="flex items-center justify-between">
+              <div className="flex rounded-lg bg-secondary p-0.5">
+                <button
+                  onClick={() => setShowFavorites(false)}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                    !showFavorites ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  All Drills
+                </button>
+                <button
+                  onClick={() => setShowFavorites(true)}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1 ${
+                    showFavorites ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Star className={`w-3 h-3 ${showFavorites ? "fill-accent text-accent" : ""}`} /> Favorites
+                </button>
+              </div>
+              {showFavorites && (
+                <span className="text-[10px] text-muted-foreground">
+                  {(profile?.favorite_drills || []).length} saved
+                </span>
+              )}
+            </div>
 
-              {Object.entries(TRAINING_CATEGORIES).map(([key, cat]) => (
-                <TabsContent key={key} value={key} className="space-y-3 mt-4">
-                  <div className={`rounded-xl border bg-gradient-to-br p-4 ${cat.color}`}>
-                    <h3 className="font-semibold text-sm">{cat.label} Training</h3>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {cat.drills[level]?.length || 0} drills for your level
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    {(cat.drills[level] || []).map((drill, i) => (
-                      <DrillCard key={i} drill={drill} index={i} onTutorial={setTutorialItem} profile={profile} />
-                    ))}
-                  </div>
-                </TabsContent>
-              ))}
-            </Tabs>
+            {showFavorites ? (
+              /* Favorites view — show saved drills across all categories */
+              <div className="space-y-2">
+                {(() => {
+                  const allDrills = [];
+                  Object.entries(TRAINING_CATEGORIES).forEach(([key, cat]) => {
+                    (cat.drills[level] || []).forEach((drill) => {
+                      if (profile?.favorite_drills?.includes(drill.name)) {
+                        allDrills.push({ drill, category: key });
+                      }
+                    });
+                  });
+                  if (allDrills.length === 0) {
+                    return (
+                      <div className="text-center py-12 space-y-2">
+                        <Star className="w-10 h-10 text-muted-foreground/30 mx-auto" />
+                        <p className="text-sm text-muted-foreground">No favorites yet</p>
+                        <p className="text-xs text-muted-foreground">Tap a drill and click "Save" to add it here</p>
+                      </div>
+                    );
+                  }
+                  return allDrills.map(({ drill, category }, i) => (
+                    <DrillCard
+                      key={`${category}-${drill.name}`}
+                      drill={drill}
+                      index={i}
+                      profile={profile}
+                      favorites={profile?.favorite_drills || []}
+                      onSelect={(d) => { setSelectedDrill(d); setSelectedCategory(category); }}
+                    />
+                  ));
+                })()}
+              </div>
+            ) : (
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="w-full bg-secondary">
+                  {Object.entries(TRAINING_CATEGORIES).map(([key, cat]) => (
+                    <TabsTrigger key={key} value={key} className="flex-1 text-xs">
+                      <span className="mr-1">{cat.icon}</span> {cat.label}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+
+                {Object.entries(TRAINING_CATEGORIES).map(([key, cat]) => (
+                  <TabsContent key={key} value={key} className="space-y-3 mt-4">
+                    <div className={`rounded-xl border bg-gradient-to-br p-4 ${cat.color}`}>
+                      <h3 className="font-semibold text-sm">{cat.label} Training</h3>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {cat.drills[level]?.length || 0} drills for your level
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      {(cat.drills[level] || []).map((drill, i) => (
+                        <DrillCard
+                          key={i}
+                          drill={drill}
+                          index={i}
+                          profile={profile}
+                          favorites={profile?.favorite_drills || []}
+                          onSelect={(d) => { setSelectedDrill(d); setSelectedCategory(key); }}
+                        />
+                      ))}
+                    </div>
+                  </TabsContent>
+                ))}
+              </Tabs>
+            )}
           </>
         )}
 

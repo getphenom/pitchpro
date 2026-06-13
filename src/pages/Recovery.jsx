@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Sparkles, Bed, Dumbbell, Wind, Thermometer, Droplets, Timer, ChevronDown, ChevronUp, CheckCircle2, BookOpen, Moon, Activity, Footprints } from "lucide-react";
+import { Loader2, Sparkles, Bed, Dumbbell, Wind, Thermometer, Droplets, Timer, ChevronDown, ChevronUp, CheckCircle2, BookOpen, Moon, Activity, Footprints, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { POSITION_LABELS } from "@/lib/gameData";
 import { motion, AnimatePresence } from "framer-motion";
 import TutorialModal from "@/components/shared/TutorialModal";
+import SwapDialog from "@/components/shared/SwapDialog";
 import { format } from "date-fns";
 
 const today = format(new Date(), "yyyy-MM-dd");
@@ -96,6 +97,7 @@ export default function Recovery() {
   const [expandedCat, setExpandedCat] = useState(null);
   const [completedExercises, setCompletedExercises] = useState({});
   const [tutorialItem, setTutorialItem] = useState(null);
+  const [swapItem, setSwapItem] = useState(null);
 
   const { data: profiles, isLoading: loadingProfile } = useQuery({
     queryKey: ["profiles"],
@@ -251,6 +253,15 @@ Create a plan with:
           triggerLabel={tutorialItem?.name || tutorialItem?.exercise || "Recovery Tutorial"}
         />
 
+        <SwapDialog
+          open={!!swapItem}
+          onClose={() => setSwapItem(null)}
+          item={swapItem}
+          itemType="recovery"
+          context={`${profile.age}-year-old ${POSITION_LABELS[profile.position]}, recovery`}
+          onSwap={() => setSwapItem(null)}
+        />
+
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-2xl font-heading font-bold">Recovery</h1>
@@ -343,7 +354,7 @@ Create a plan with:
               <div className="rounded-xl bg-card border border-border p-4">
                 <h4 className="font-semibold text-sm mb-3">🥗 Post-Training Nutrition</h4>
                 {recoveryPlan.nutrition_recovery?.map((n, i) => (
-                  <div key={i} className="mb-3 last:mb-0 pb-3 last:pb-0 border-b last:border-0 border-border">
+                  <div key={i} className="mb-3 last:mb-0 pb-3 last:pb-0 border-b last:border-0 border-border group">
                     <p className="text-xs font-semibold text-primary">{n.timing}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{n.guidance}</p>
                     <div className="flex flex-wrap gap-1 mt-1">
@@ -351,6 +362,12 @@ Create a plan with:
                         <span key={j} className="text-[10px] bg-secondary px-1.5 py-0.5 rounded-md">{ex}</span>
                       ))}
                     </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setSwapItem({ ...n, name: n.timing }); }}
+                      className="text-[10px] text-muted-foreground hover:text-teal-400 transition-colors flex items-center gap-0.5 mt-1"
+                    >
+                      <RefreshCw className="w-3 h-3" /> Swap
+                    </button>
                   </div>
                 ))}
               </div>
@@ -359,7 +376,7 @@ Create a plan with:
               <div className="rounded-xl bg-card border border-border p-4">
                 <h4 className="font-semibold text-sm mb-3">🧘 Personalized Stretching Routine</h4>
                 {recoveryPlan.stretching_routine?.map((stretch, i) => (
-                  <div key={i} className="flex items-start gap-3 mb-2 pb-2 border-b last:border-0 border-border">
+                  <div key={i} className="flex items-start gap-3 mb-2 pb-2 border-b last:border-0 border-border group">
                     <div className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
                       <span className="text-xs font-bold text-blue-400">{i + 1}</span>
                     </div>
@@ -369,6 +386,12 @@ Create a plan with:
                         <span className="text-[10px] text-muted-foreground">{stretch.duration}</span>
                       </div>
                       <p className="text-[10px] text-muted-foreground">{stretch.instructions}</p>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setSwapItem({ ...stretch, name: stretch.exercise, duration: stretch.duration }); }}
+                        className="text-[10px] text-muted-foreground hover:text-teal-400 transition-colors flex items-center gap-0.5 mt-1"
+                      >
+                        <RefreshCw className="w-3 h-3" /> Swap
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -502,9 +525,17 @@ Create a plan with:
                                   <span>·</span>
                                   <Footprints className="w-3 h-3" /> {ex.target}
                                 </div>
-                                <span className="text-[10px] text-muted-foreground mt-0.5 group-hover:text-teal-400 transition-colors inline-flex items-center gap-0.5">
-                                  <BookOpen className="w-3 h-3" /> Tap for tutorial
-                                </span>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); setSwapItem(ex); }}
+                                    className="text-[10px] text-muted-foreground hover:text-teal-400 transition-colors flex items-center gap-0.5"
+                                  >
+                                    <RefreshCw className="w-3 h-3" /> Swap
+                                  </button>
+                                  <span className="text-[10px] text-muted-foreground group-hover:text-teal-400 transition-colors inline-flex items-center gap-0.5">
+                                    <BookOpen className="w-3 h-3" /> Tutorial
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           );

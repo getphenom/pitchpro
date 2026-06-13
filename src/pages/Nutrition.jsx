@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, UtensilsCrossed, Sparkles, Apple, Beef, Wheat, Fish, Salad, BookOpen } from "lucide-react";
+import { Loader2, UtensilsCrossed, Sparkles, Apple, Beef, Wheat, Fish, Salad, BookOpen, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TutorialModal from "@/components/shared/TutorialModal";
@@ -9,12 +9,14 @@ import { POSITION_LABELS } from "@/lib/gameData";
 import { motion } from "framer-motion";
 import NutritionCoachChat from "@/components/agents/NutritionCoachChat";
 import NutritionVsTraining from "@/components/nutrition/NutritionVsTraining";
+import SwapDialog from "@/components/shared/SwapDialog";
 
 export default function Nutrition() {
   const [mealPlan, setMealPlan] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("plan");
   const [tutorialItem, setTutorialItem] = useState(null);
+  const [swapItem, setSwapItem] = useState(null);
 
   const { data: profiles, isLoading } = useQuery({
     queryKey: ["profiles"],
@@ -123,6 +125,25 @@ Focus on real, practical foods that a ${profile.age}-year-old would actually eat
           triggerLabel={tutorialItem?.name || "How to Prepare"}
         />
 
+        <SwapDialog
+          open={!!swapItem}
+          onClose={() => setSwapItem(null)}
+          item={swapItem}
+          itemType="meal"
+          context={`${profile.age}-year-old soccer player, ${profile.skill_level} level, training ${profile.weekly_training_days} days/week`}
+          onSwap={(newItem) => {
+            if (!mealPlan) return;
+            const updated = { ...mealPlan };
+            // Find and replace the meal in both training_day and rest_day
+            const replaceInMeals = (meals) => meals?.map(m => 
+              m.name === swapItem.name ? { ...m, name: newItem.name, foods: newItem.foods || m.foods, calories: newItem.calories || m.calories, time: newItem.time || m.time, note: newItem.description || m.note } : m
+            );
+            if (updated.training_day?.meals) updated.training_day.meals = replaceInMeals(updated.training_day.meals);
+            if (updated.rest_day?.meals) updated.rest_day.meals = replaceInMeals(updated.rest_day.meals);
+            setMealPlan(updated);
+          }}
+        />
+
         <div>
           <h1 className="text-2xl font-heading font-bold">Nutrition</h1>
           <p className="text-xs text-muted-foreground mt-1">Fuel your performance</p>
@@ -224,9 +245,17 @@ Focus on real, practical foods that a ${profile.age}-year-old would actually eat
                     {meal.note && <p className="text-xs text-muted-foreground">{meal.note}</p>}
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-xs text-primary font-medium">{meal.calories} kcal</p>
-                      <span className="text-[10px] text-muted-foreground group-hover:text-primary transition-colors flex items-center gap-0.5">
-                        <BookOpen className="w-3 h-3" /> Tap for recipe
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setSwapItem(meal); }}
+                          className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5"
+                        >
+                          <RefreshCw className="w-3 h-3" /> Swap
+                        </button>
+                        <span className="text-[10px] text-muted-foreground group-hover:text-primary transition-colors flex items-center gap-0.5">
+                          <BookOpen className="w-3 h-3" /> Recipe
+                        </span>
+                      </div>
                     </div>
                   </motion.div>
                 ))}
@@ -257,9 +286,17 @@ Focus on real, practical foods that a ${profile.age}-year-old would actually eat
                     {meal.note && <p className="text-xs text-muted-foreground">{meal.note}</p>}
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-xs text-primary font-medium">{meal.calories} kcal</p>
-                      <span className="text-[10px] text-muted-foreground group-hover:text-primary transition-colors flex items-center gap-0.5">
-                        <BookOpen className="w-3 h-3" /> Tap for recipe
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setSwapItem(meal); }}
+                          className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5"
+                        >
+                          <RefreshCw className="w-3 h-3" /> Swap
+                        </button>
+                        <span className="text-[10px] text-muted-foreground group-hover:text-primary transition-colors flex items-center gap-0.5">
+                          <BookOpen className="w-3 h-3" /> Recipe
+                        </span>
+                      </div>
                     </div>
                   </motion.div>
                 ))}

@@ -137,6 +137,13 @@
     "assessment_plans": {
       "type": "object",
       "description": "AI-generated plans for each pillar"
+    },
+    "favorite_drills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Favorite/saved drill names"
     }
   },
   "required": [
