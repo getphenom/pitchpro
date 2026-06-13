@@ -20,6 +20,7 @@ import Mental from "@/pages/Mental";
 import Tactics from "@/pages/Tactics";
 import Profile from "@/pages/Profile";
 import Injury from "@/pages/Injury";
+import Development from "@/pages/Development";
 import Onboarding from "@/pages/Onboarding";
 
 const AuthenticatedApp = () => {
@@ -61,6 +62,7 @@ const AuthenticatedApp = () => {
           <Route path="/tactics" element={<Tactics />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/injury" element={<Injury />} />
+          <Route path="/development" element={<Development />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />

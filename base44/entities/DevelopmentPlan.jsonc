@@ -1,0 +1,235 @@
+{
+  "name": "DevelopmentPlan",
+  "type": "object",
+  "properties": {
+    "player_id": {
+      "type": "string",
+      "description": "Reference to player profile"
+    },
+    "plan_type": {
+      "type": "string",
+      "enum": [
+        "annual",
+        "quarterly"
+      ],
+      "description": "Type of development plan"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Plan start date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Plan end date"
+    },
+    "position": {
+      "type": "string",
+      "description": "Position this plan is for"
+    },
+    "age": {
+      "type": "number",
+      "description": "Age at plan creation"
+    },
+    "skill_level": {
+      "type": "string",
+      "description": "Skill level at plan creation"
+    },
+    "phases": {
+      "type": "array",
+      "description": "Development phases (mesocycles)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "phase_number": {
+            "type": "number"
+          },
+          "focus": {
+            "type": "string"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "goals": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "milestones": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "target_date": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "completed": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "metric": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "key_skills": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "training_focus": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "weekly_goals": {
+      "type": "array",
+      "description": "Weekly goals across the plan",
+      "items": {
+        "type": "object",
+        "properties": {
+          "week_number": {
+            "type": "number"
+          },
+          "phase": {
+            "type": "string"
+          },
+          "focus": {
+            "type": "string"
+          },
+          "daily_goals": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "day": {
+                  "type": "string"
+                },
+                "goal": {
+                  "type": "string"
+                },
+                "drill_name": {
+                  "type": "string"
+                },
+                "category": {
+                  "type": "string"
+                },
+                "duration": {
+                  "type": "string"
+                },
+                "completed": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            }
+          },
+          "weekly_objective": {
+            "type": "string"
+          },
+          "xp_target": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "monthly_checkpoints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "review_questions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "expected_progress": {
+            "type": "string"
+          },
+          "completed": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      }
+    },
+    "skill_targets": {
+      "type": "object",
+      "description": "Target skill ratings by end of plan",
+      "properties": {
+        "pace": {
+          "type": "number"
+        },
+        "shooting": {
+          "type": "number"
+        },
+        "passing": {
+          "type": "number"
+        },
+        "dribbling": {
+          "type": "number"
+        },
+        "defending": {
+          "type": "number"
+        },
+        "physical": {
+          "type": "number"
+        },
+        "mental": {
+          "type": "number"
+        },
+        "tactical": {
+          "type": "number"
+        }
+      }
+    },
+    "long_term_vision": {
+      "type": "string",
+      "description": "Long-term development vision statement"
+    },
+    "coaching_notes": {
+      "type": "string",
+      "description": "General coaching notes and guidance"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed",
+        "paused"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "player_id",
+    "plan_type",
+    "start_date",
+    "end_date",
+    "position"
+  ]
+}
