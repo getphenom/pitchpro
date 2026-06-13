@@ -11,6 +11,7 @@ import WeeklyProgress from "@/components/shared/WeeklyProgress";
 import PerformanceFeedback from "@/components/home/PerformanceFeedback";
 import DailyReminder from "@/components/home/DailyReminder";
 import FloatingQuickLog from "@/components/home/FloatingQuickLog";
+import ReadinessScore from "@/components/home/ReadinessScore";
 import { POSITION_LABELS, BADGES, getLevel, LEVEL_TITLES } from "@/lib/gameData";
 import { Loader2, Trophy, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
@@ -180,6 +181,11 @@ export default function Home() {
             <p className="text-2xl font-heading font-bold text-accent">{dailyLog?.xp_earned_today || 0}</p>
             <p className="text-[10px] text-muted-foreground mt-1">XP Today</p>
           </div>
+        </motion.div>
+
+        {/* Readiness Score */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}>
+          <ReadinessScore dailyLog={dailyLog} profile={profile} />
         </motion.div>
 
         {/* Water Tracker */}
