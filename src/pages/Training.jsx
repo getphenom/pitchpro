@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Dumbbell, Clock, Flame, ChevronRight, Zap, Target, Shield, Footprints } from "lucide-react";
+import { Loader2, Dumbbell, Clock, Flame, Calendar, ChevronRight, Zap, Target, Shield, Footprints } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { POSITION_LABELS } from "@/lib/gameData";
 import { motion } from "framer-motion";
 import TrainingPlanGenerator from "@/components/training/TrainingPlanGenerator";
+import TrainingCalendar from "@/components/training/TrainingCalendar";
 
 const TRAINING_CATEGORIES = {
   technical: {
@@ -120,6 +121,7 @@ function DrillCard({ drill, index }) {
 export default function Training() {
   const [activeTab, setActiveTab] = useState("technical");
   const [showPlan, setShowPlan] = useState(false);
+  const [viewMode, setViewMode] = useState("drills"); // "drills" | "calendar"
 
   const { data: profiles, isLoading } = useQuery({
     queryKey: ["profiles"],
@@ -127,6 +129,12 @@ export default function Training() {
   });
 
   const profile = profiles?.[0];
+
+  const { data: dailyLogs = [] } = useQuery({
+    queryKey: ["training-logs"],
+    queryFn: () => base44.entities.DailyLog.list("-date", 30),
+    enabled: !!profile,
+  });
 
   if (isLoading) {
     return (
@@ -150,17 +158,47 @@ export default function Training() {
               {POSITION_LABELS[profile.position]} · {level.charAt(0).toUpperCase() + level.slice(1)} drills
             </p>
           </div>
-          <Button
-            variant={showPlan ? "outline" : "default"}
-            className={showPlan ? "" : "bg-primary hover:bg-primary/90"}
-            size="sm"
-            onClick={() => setShowPlan(!showPlan)}
-          >
-            {showPlan ? "View Drills" : "⚡ Get AI Plan"}
-          </Button>
+          <div className="flex items-center gap-2">
+            <div className="flex rounded-lg bg-secondary p-0.5">
+              <button
+                onClick={() => { setViewMode("drills"); setShowPlan(false); }}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  viewMode === "drills" && !showPlan
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Dumbbell className="w-3.5 h-3.5 inline mr-1" />
+                Drills
+              </button>
+              <button
+                onClick={() => { setViewMode("calendar"); setShowPlan(false); }}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  viewMode === "calendar"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Calendar className="w-3.5 h-3.5 inline mr-1" />
+                Calendar
+              </button>
+            </div>
+            {viewMode === "drills" && (
+              <Button
+                variant={showPlan ? "outline" : "default"}
+                className={showPlan ? "" : "bg-primary hover:bg-primary/90"}
+                size="sm"
+                onClick={() => setShowPlan(!showPlan)}
+              >
+                {showPlan ? "Back" : "⚡ AI Plan"}
+              </Button>
+            )}
+          </div>
         </div>
 
-        {showPlan ? (
+        {viewMode === "calendar" ? (
+          <TrainingCalendar profile={profile} dailyLogs={dailyLogs} />
+        ) : showPlan ? (
           <TrainingPlanGenerator profile={profile} />
         ) : (
           <>

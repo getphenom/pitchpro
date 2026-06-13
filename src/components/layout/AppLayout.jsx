@@ -43,19 +43,19 @@ export default function AppLayout() {
       </nav>
 
       {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-xl border-t border-border flex justify-around items-center py-2 px-2 z-50 safe-area-bottom">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t-2 border-border shadow-[0_-4px_20px_rgba(0,0,0,0.5)] flex justify-around items-center py-3 px-2 z-50 safe-area-bottom">
         {NAV_ITEMS.map((item) => {
           const isActive = location.pathname === item.path;
           return (
             <Link
               key={item.path}
               to={item.path}
-              className={`flex flex-col items-center gap-0.5 p-2 rounded-xl transition-all min-w-[3.5rem]
-                ${isActive ? "text-primary" : "text-muted-foreground"}`}
+              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all min-w-[3.5rem]
+                ${isActive ? "text-primary" : "text-foreground/70 hover:text-foreground"}`}
             >
-              <item.icon className={`w-5 h-5 ${isActive ? "text-primary" : ""}`} />
-              <span className="text-[10px] font-medium">{item.label}</span>
-              {isActive && <div className="w-1 h-1 rounded-full bg-primary mt-0.5" />}
+              <item.icon className={`w-5 h-5 ${isActive ? "text-primary drop-shadow-[0_0_6px_hsl(142_71%_45%/0.5)]" : ""}`} />
+              <span className="text-[10px] font-semibold">{item.label}</span>
+              {isActive && <div className="w-1.5 h-1.5 rounded-full bg-primary mt-px shadow-[0_0_6px_hsl(142_71%_45%/0.6)]" />}
             </Link>
           );
         })}
