@@ -6,6 +6,7 @@ import { Loader2, Brain, Sparkles, Eye, Heart, Shield, Target, Timer, Play } fro
 import { Button } from "@/components/ui/button";
 import { POSITION_LABELS } from "@/lib/gameData";
 import { motion } from "framer-motion";
+import MentalCoachChat from "@/components/agents/MentalCoachChat";
 
 const MENTAL_EXERCISES = [
   {
@@ -298,6 +299,15 @@ Make it relatable and inspiring for a young player.`,
             </div>
           )}
         </div>
+
+        {/* Mental Coach Agent */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl bg-card border border-cyan-500/20 p-5"
+        >
+          <MentalCoachChat profile={profile} />
+        </motion.div>
       </div>
     </div>
   );
