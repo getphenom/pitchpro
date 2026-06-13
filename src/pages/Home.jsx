@@ -2,17 +2,18 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
+import { format, startOfWeek } from "date-fns";
 import XpBar from "@/components/shared/XpBar";
-import StatRadar from "@/components/shared/StatRadar";
 import WaterTracker from "@/components/shared/WaterTracker";
 import DailyQuests from "@/components/home/DailyQuests";
 import StreakBanner from "@/components/home/StreakBanner";
+import WeeklyProgress from "@/components/shared/WeeklyProgress";
 import { POSITION_LABELS, BADGES, getLevel, LEVEL_TITLES } from "@/lib/gameData";
 import { Loader2, Trophy, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 
 const today = format(new Date(), "yyyy-MM-dd");
+const currentWeekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
 
 export default function Home() {
   const navigate = useNavigate();
@@ -32,6 +33,31 @@ export default function Home() {
   });
 
   const dailyLog = logs?.[0];
+
+  const { data: snapshots = [], refetch: refetchSnapshots } = useQuery({
+    queryKey: ["stat-snapshots", profile?.id],
+    queryFn: () =>
+      base44.entities.StatSnapshot.filter(
+        { player_id: profile.id },
+        "-week_start",
+        20
+      ),
+    enabled: !!profile,
+  });
+
+  // Auto-snapshot current stats for this week
+  useEffect(() => {
+    if (!profile || !snapshots) return;
+    const alreadySnapped = snapshots.some((s) => s.week_start === currentWeekStart);
+    if (alreadySnapped) return;
+    base44.entities.StatSnapshot.create({
+      player_id: profile.id,
+      week_start: currentWeekStart,
+      stats: profile.stats || {},
+      xp: profile.xp || 0,
+      level: getLevel(profile.xp || 0),
+    }).then(() => refetchSnapshots());
+  }, [profile?.id, snapshots?.length]);
 
   const updateLog = useMutation({
     mutationFn: async (data) => {
@@ -165,20 +191,23 @@ export default function Home() {
           />
         </motion.div>
 
-        {/* Stats Preview */}
+        {/* Weekly Stats Progress */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
           className="rounded-xl bg-card border border-border p-4"
         >
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="w-4 h-4 text-primary" />
             <h3 className="font-heading font-bold text-sm tracking-wider uppercase text-muted-foreground">
-              Player Stats
+              Weekly Progress
             </h3>
           </div>
-          <StatRadar stats={profile.stats} />
+          <WeeklyProgress
+            currentStats={profile.stats || {}}
+            snapshots={snapshots}
+          />
         </motion.div>
 
         {/* Recent Badges */}

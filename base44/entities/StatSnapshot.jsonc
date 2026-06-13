@@ -1,0 +1,67 @@
+{
+  "name": "StatSnapshot",
+  "type": "object",
+  "properties": {
+    "player_id": {
+      "type": "string",
+      "description": "Reference to player profile"
+    },
+    "week_start": {
+      "type": "string",
+      "format": "date",
+      "description": "Monday of the snapshot week"
+    },
+    "stats": {
+      "type": "object",
+      "description": "Player attribute ratings 1-100 at snapshot time",
+      "properties": {
+        "pace": {
+          "type": "number",
+          "default": 50
+        },
+        "shooting": {
+          "type": "number",
+          "default": 50
+        },
+        "passing": {
+          "type": "number",
+          "default": 50
+        },
+        "dribbling": {
+          "type": "number",
+          "default": 50
+        },
+        "defending": {
+          "type": "number",
+          "default": 50
+        },
+        "physical": {
+          "type": "number",
+          "default": 50
+        },
+        "mental": {
+          "type": "number",
+          "default": 50
+        },
+        "tactical": {
+          "type": "number",
+          "default": 50
+        }
+      }
+    },
+    "xp": {
+      "type": "number",
+      "default": 0,
+      "description": "XP at snapshot time"
+    },
+    "level": {
+      "type": "number",
+      "default": 1,
+      "description": "Level at snapshot time"
+    }
+  },
+  "required": [
+    "player_id",
+    "week_start"
+  ]
+}
