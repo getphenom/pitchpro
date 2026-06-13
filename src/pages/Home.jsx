@@ -15,7 +15,8 @@ import ReadinessScore from "@/components/home/ReadinessScore";
 import WeeklySummary from "@/components/home/WeeklySummary";
 import DashboardCharts from "@/components/home/DashboardCharts";
 import { POSITION_LABELS, BADGES, getLevel, LEVEL_TITLES } from "@/lib/gameData";
-import { Loader2, Trophy, TrendingUp } from "lucide-react";
+import { checkBadges } from "@/lib/badgeChecker";
+import { Loader2, Trophy, TrendingUp, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
 const today = format(new Date(), "yyyy-MM-dd");
@@ -50,6 +51,14 @@ export default function Home() {
       ),
     enabled: !!profile,
   });
+
+  const { data: allLogs = [] } = useQuery({
+    queryKey: ["all-daily-logs"],
+    queryFn: () => base44.entities.DailyLog.list("-date", 200),
+    enabled: !!profile,
+  });
+
+  const [newBadges, setNewBadges] = useState([]);
 
   // Auto-snapshot current stats for this week
   useEffect(() => {
@@ -98,11 +107,21 @@ export default function Home() {
       xp_earned_today: Math.max(0, newXp),
     });
 
-    await updateProfile.mutateAsync({
+    const updatedProfile = {
       xp: Math.max(0, (profile.xp || 0) + xpDelta),
       level: getLevel(Math.max(0, (profile.xp || 0) + xpDelta)),
       last_active_date: today,
-    });
+    };
+
+    // Check for new badges
+    const badges = checkBadges({ ...profile, ...updatedProfile }, allLogs);
+    if (badges.length > 0) {
+      updatedProfile.badges = [...new Set([...(profile.badges || []), ...badges])];
+      setNewBadges(badges);
+      setTimeout(() => setNewBadges([]), 5000);
+    }
+
+    await updateProfile.mutateAsync(updatedProfile);
   };
 
   const handleWaterUpdate = async (ml) => {
@@ -163,6 +182,31 @@ export default function Home() {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <StreakBanner streak={profile.streak_days || 0} />
         </motion.div>
+
+        {/* New Badge Celebration */}
+        {newBadges.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="rounded-xl bg-gradient-to-r from-accent/20 via-primary/20 to-accent/20 border border-accent/40 p-4 flex items-center gap-3"
+          >
+            <Sparkles className="w-6 h-6 text-accent animate-pulse" />
+            <div>
+              <p className="text-sm font-heading font-bold">Badge{newBadges.length > 1 ? 's' : ''} Unlocked!</p>
+              <div className="flex flex-wrap gap-1.5 mt-1">
+                {newBadges.map(id => {
+                  const b = BADGES[id];
+                  return b ? (
+                    <span key={id} className="text-xs bg-accent/20 rounded-full px-2 py-0.5">
+                      {b.icon} {b.name}
+                    </span>
+                  ) : null;
+                })}
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Evening Reminder */}
         <DailyReminder dailyLog={dailyLog} profile={profile} />

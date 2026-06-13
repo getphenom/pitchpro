@@ -1,25 +1,35 @@
-import { BADGES, getLevel } from "@/lib/gameData";
+import { base44 } from "@/api/base44Client";
+import { useQuery } from "@tanstack/react-query";
+import { BADGES, getLevel, BADGE_CRITERIA } from "@/lib/gameData";
 import { motion } from "framer-motion";
 import { Trophy, Lock, TrendingUp } from "lucide-react";
 
-const BADGE_CRITERIA = {
-  first_login: { check: (profile) => true, hint: "Start your soccer journey" },
-  streak_3: { check: (profile) => (profile.streak_days || 0) >= 3, hint: "Maintain a 3-day activity streak", progress: (p) => Math.min(Math.round(((p.streak_days || 0) / 3) * 100), 99) },
-  streak_7: { check: (profile) => (profile.streak_days || 0) >= 7, hint: "Maintain a 7-day activity streak", progress: (p) => Math.min(Math.round(((p.streak_days || 0) / 7) * 100), 99) },
-  streak_30: { check: (profile) => (profile.streak_days || 0) >= 30, hint: "Maintain a 30-day activity streak", progress: (p) => Math.min(Math.round(((p.streak_days || 0) / 30) * 100), 99) },
-  hydrated: { check: () => false, hint: "Hit water goal 5 times" },
-  nutrition_pro: { check: () => false, hint: "Log all meals for 7 days straight" },
-  mental_strong: { check: () => false, hint: "Complete 5 mental training sessions" },
-  level_5: { check: (profile) => getLevel(profile.xp || 0) >= 5, hint: "Reach Level 5", progress: (p) => Math.min(Math.round((getLevel(p.xp || 0) / 5) * 100), 99) },
-  level_10: { check: (profile) => getLevel(profile.xp || 0) >= 10, hint: "Reach Level 10", progress: (p) => Math.min(Math.round((getLevel(p.xp || 0) / 10) * 100), 99) },
-  first_training: { check: () => false, hint: "Complete your first training session" },
-  tactical_mind: { check: () => false, hint: "Complete 10 tactical training sessions" },
+const PROGRESS_HINTS = {
+  streak_3: { hint: "3-day streak", goal: 3, metric: (p) => p.streak_days || 0 },
+  streak_7: { hint: "7-day streak", goal: 7, metric: (p) => p.streak_days || 0 },
+  streak_14: { hint: "14-day streak", goal: 14, metric: (p) => p.streak_days || 0 },
+  streak_30: { hint: "30-day streak", goal: 30, metric: (p) => p.streak_days || 0 },
+  streak_60: { hint: "60-day streak", goal: 60, metric: (p) => p.streak_days || 0 },
+  streak_100: { hint: "100-day streak", goal: 100, metric: (p) => p.streak_days || 0 },
+  level_5: { hint: "Reach Level 5", goal: 5, metric: (p) => getLevel(p.xp || 0) },
+  level_10: { hint: "Reach Level 10", goal: 10, metric: (p) => getLevel(p.xp || 0) },
+  level_15: { hint: "Reach Level 15", goal: 15, metric: (p) => getLevel(p.xp || 0) },
+  level_20: { hint: "Reach Level 20", goal: 20, metric: (p) => getLevel(p.xp || 0) },
+  xp_1000: { hint: "Earn 1,000 XP", goal: 1000, metric: (p) => p.xp || 0 },
+  xp_5000: { hint: "Earn 5,000 XP", goal: 5000, metric: (p) => p.xp || 0 },
+  xp_10000: { hint: "Earn 10,000 XP", goal: 10000, metric: (p) => p.xp || 0 },
 };
 
 export default function TrophyCase({ profile }) {
   const earnedIds = profile.badges || [];
   const earnedCount = earnedIds.length;
   const totalCount = Object.keys(BADGES).length;
+
+  const { data: dailyLogs = [] } = useQuery({
+    queryKey: ["daily-logs-all"],
+    queryFn: () => base44.entities.DailyLog.filter({ player_id: profile.id }, "-date", 200),
+    enabled: !!profile?.id,
+  });
 
   return (
     <motion.div
@@ -56,8 +66,9 @@ export default function TrophyCase({ profile }) {
       <div className="grid grid-cols-2 gap-2">
         {Object.entries(BADGES).map(([id, badge]) => {
           const earned = earnedIds.includes(id);
-          const criteria = BADGE_CRITERIA[id];
-          const progress = criteria?.progress ? criteria.progress(profile) : 0;
+          const criteriaFn = BADGE_CRITERIA[id];
+          const progHint = PROGRESS_HINTS[id];
+          const progress = progHint ? Math.min(Math.round((progHint.metric(profile) / progHint.goal) * 100), 99) : 0;
 
           return (
             <motion.div
@@ -91,7 +102,7 @@ export default function TrophyCase({ profile }) {
                   {!earned && <Lock className="w-3 h-3 text-muted-foreground flex-shrink-0" />}
                 </div>
                 <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">
-                  {earned ? badge.desc : criteria?.hint || badge.desc}
+                  {earned ? badge.desc : progHint?.hint || badge.desc}
                 </p>
 
                 {/* Progress bar for in-progress badges */}
