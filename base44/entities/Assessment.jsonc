@@ -1,0 +1,111 @@
+{
+  "name": "Assessment",
+  "type": "object",
+  "properties": {
+    "player_id": {
+      "type": "string",
+      "description": "Reference to player profile"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "pillars": {
+      "type": "object",
+      "properties": {
+        "physical": {
+          "type": "object",
+          "properties": {
+            "score": {
+              "type": "number"
+            },
+            "answers": {
+              "type": "object"
+            }
+          }
+        },
+        "technical": {
+          "type": "object",
+          "properties": {
+            "score": {
+              "type": "number"
+            },
+            "answers": {
+              "type": "object"
+            }
+          }
+        },
+        "tactical": {
+          "type": "object",
+          "properties": {
+            "score": {
+              "type": "number"
+            },
+            "answers": {
+              "type": "object"
+            }
+          }
+        },
+        "mental": {
+          "type": "object",
+          "properties": {
+            "score": {
+              "type": "number"
+            },
+            "answers": {
+              "type": "object"
+            }
+          }
+        },
+        "nutrition": {
+          "type": "object",
+          "properties": {
+            "score": {
+              "type": "number"
+            },
+            "answers": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "generated_plans": {
+      "type": "object",
+      "properties": {
+        "physical_plan": {
+          "type": "object"
+        },
+        "technical_plan": {
+          "type": "object"
+        },
+        "tactical_plan": {
+          "type": "object"
+        },
+        "mental_plan": {
+          "type": "object"
+        },
+        "nutrition_plan": {
+          "type": "object"
+        },
+        "idp_summary": {
+          "type": "string"
+        },
+        "ltdp_vision": {
+          "type": "string"
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "in_progress",
+        "completed"
+      ],
+      "default": "in_progress"
+    }
+  },
+  "required": [
+    "player_id"
+  ]
+}

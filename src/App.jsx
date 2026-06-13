@@ -24,6 +24,7 @@ import Development from "@/pages/Development";
 import Recovery from "@/pages/Recovery";
 import MonthlySummary from "@/pages/MonthlySummary";
 import Onboarding from "@/pages/Onboarding";
+import Assessment from "@/pages/Assessment";
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -67,6 +68,7 @@ const AuthenticatedApp = () => {
           <Route path="/development" element={<Development />} />
           <Route path="/recovery" element={<Recovery />} />
           <Route path="/monthly" element={<MonthlySummary />} />
+          <Route path="/assessment" element={<Assessment />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />

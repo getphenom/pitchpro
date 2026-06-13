@@ -119,6 +119,24 @@
       "type": "number",
       "default": 5,
       "description": "How many days per week they train"
+    },
+    "assessment_completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the initial assessment is done"
+    },
+    "assessment_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of last assessment"
+    },
+    "assessment_scores": {
+      "type": "object",
+      "description": "Per-pillar assessment scores 0-100"
+    },
+    "assessment_plans": {
+      "type": "object",
+      "description": "AI-generated plans for each pillar"
     }
   },
   "required": [

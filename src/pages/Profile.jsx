@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Edit2, Save, LogOut, Trophy, Flame, Star, Award, Sun, Moon } from "lucide-react";
+import { Loader2, Edit2, Save, LogOut, Trophy, Flame, Star, Award, Sun, Moon, ClipboardCheck, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,11 +11,14 @@ import StatRadar from "@/components/shared/StatRadar";
 import TrophyCase from "@/components/profile/TrophyCase";
 import { POSITION_LABELS, getLevel, LEVEL_TITLES, STAT_COLORS } from "@/lib/gameData";
 import { useTheme } from "@/lib/ThemeProvider";
+import { PILLARS } from "@/lib/assessmentData";
+import PlayerAssessment from "@/components/assessment/PlayerAssessment";
 import { motion } from "framer-motion";
 
 export default function Profile() {
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState({});
+  const [showAssessment, setShowAssessment] = useState(false);
   const queryClient = useQueryClient();
   const { theme, toggleTheme } = useTheme();
 
@@ -241,6 +244,67 @@ export default function Profile() {
           <Button variant="outline" className="w-full" onClick={handleEdit}>
             <Edit2 className="w-4 h-4 mr-2" /> Edit Profile
           </Button>
+        )}
+
+        {/* Assessment Scores & Retake */}
+        {showAssessment ? (
+          <div className="rounded-xl bg-card border border-border p-4">
+            <h3 className="font-heading font-bold text-sm mb-4 flex items-center gap-2">
+              <ClipboardCheck className="w-4 h-4 text-primary" /> Retake Assessment
+            </h3>
+            <PlayerAssessment
+              profile={profile}
+              onComplete={() => {
+                setShowAssessment(false);
+                queryClient.invalidateQueries({ queryKey: ["profiles"] });
+              }}
+            />
+          </div>
+        ) : (
+          <>
+            {profile.assessment_scores && (
+              <div className="rounded-xl bg-card border border-border p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-heading font-bold text-sm flex items-center gap-2">
+                    <ClipboardCheck className="w-4 h-4 text-primary" /> Assessment Results
+                  </h3>
+                  <button
+                    onClick={() => setShowAssessment(true)}
+                    className="text-[10px] text-primary hover:underline flex items-center gap-1"
+                  >
+                    <RefreshCw className="w-3 h-3" /> Retake
+                  </button>
+                </div>
+                <div className="grid grid-cols-5 gap-2">
+                  {PILLARS.map((p) => {
+                    const score = profile.assessment_scores?.[p.key] || 0;
+                    const sc = score >= 70 ? "#22c55e" : score >= 50 ? "#f59e0b" : score >= 30 ? "#f97316" : "#ef4444";
+                    return (
+                      <div key={p.key} className="text-center">
+                        <span className="text-lg">{p.icon}</span>
+                        <p className="text-xs font-heading font-bold mt-1" style={{ color: sc }}>{score}%</p>
+                        <p className="text-[8px] text-muted-foreground">{p.label}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-[10px] text-muted-foreground text-center">
+                  Assessed {profile.assessment_date}
+                </p>
+              </div>
+            )}
+
+            {!profile.assessment_scores && !profile.assessment_completed && (
+              <div className="rounded-xl bg-card border border-dashed border-primary/30 p-4 text-center space-y-2">
+                <ClipboardCheck className="w-8 h-8 text-muted-foreground mx-auto" />
+                <p className="text-sm font-medium">Take Your Assessment</p>
+                <p className="text-xs text-muted-foreground">Get personalized plans for every area of your game.</p>
+                <Button size="sm" onClick={() => setShowAssessment(true)} className="mt-1">
+                  <ClipboardCheck className="w-4 h-4 mr-1" /> Start Assessment
+                </Button>
+              </div>
+            )}
+          </>
         )}
 
         {/* Theme Toggle */}

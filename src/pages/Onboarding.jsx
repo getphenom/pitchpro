@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { POSITION_LABELS } from "@/lib/gameData";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, ChevronLeft, Trophy, User, Target, Ruler } from "lucide-react";
+import { ChevronRight, ChevronLeft, Trophy, User, Target, Ruler, ClipboardCheck, Loader2 } from "lucide-react";
+import PlayerAssessment from "@/components/assessment/PlayerAssessment";
 
 const STEPS = ["welcome", "basics", "position", "physical"];
 
@@ -25,6 +26,8 @@ export default function Onboarding() {
     weekly_training_days: 5,
   });
   const [saving, setSaving] = useState(false);
+  const [createdProfile, setCreatedProfile] = useState(null);
+  const [showAssessment, setShowAssessment] = useState(false);
   const navigate = useNavigate();
 
   const update = (field, value) => setForm((p) => ({ ...p, [field]: value }));
@@ -56,10 +59,40 @@ export default function Onboarding() {
         defending: 50, physical: 50, mental: 50, tactical: 50,
       },
     };
-    await base44.entities.PlayerProfile.create(profileData);
-    navigate("/");
-    window.location.reload();
+    const profile = await base44.entities.PlayerProfile.create(profileData);
+    setCreatedProfile({ ...profileData, id: profile.id });
+    setSaving(false);
+    setShowAssessment(true);
   };
+
+  if (showAssessment && createdProfile) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-lg">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-6"
+          >
+            <div className="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-3">
+              <ClipboardCheck className="w-8 h-8 text-primary" />
+            </div>
+            <h2 className="text-xl font-heading font-bold">Player Assessment</h2>
+            <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+              Answer a few questions across 5 pillars so we can build personalized plans just for you.
+            </p>
+          </motion.div>
+          <PlayerAssessment
+            profile={createdProfile}
+            onComplete={() => {
+              navigate("/");
+              window.location.reload();
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -272,7 +305,11 @@ export default function Onboarding() {
               onClick={handleFinish}
               disabled={saving}
             >
-              {saving ? "Creating..." : "Let's Go! ⚡"}
+              {saving ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Creating Profile...</>
+              ) : (
+                <>Continue to Assessment <ClipboardCheck className="w-4 h-4 ml-1" /></>
+              )}
             </Button>
           )}
         </div>
