@@ -1,5 +1,6 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { Home, Dumbbell, UtensilsCrossed, Brain, Map, User, Trophy } from "lucide-react";
+import PostWorkoutNutritionReminder from "@/components/home/PostWorkoutNutritionReminder";
 
 const NAV_ITEMS = [
   { path: "/", icon: Home, label: "Home" },
@@ -15,6 +16,7 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <PostWorkoutNutritionReminder />
       <div className="flex-1 pb-20 md:pb-0 md:pl-20">
         <Outlet />
       </div>
