@@ -1,12 +1,13 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { POSITION_LABELS } from "@/lib/gameData";
+import { POSITION_LABELS, getLevel } from "@/lib/gameData";
+import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Loader2, Timer, Footprints, ArrowUp, Gauge, Activity, Target, ClipboardCheck,
-  Trophy, TrendingUp, TrendingDown, Zap, Siren, Award, Dumbbell, Shirt, ShieldCheck
+  Trophy, TrendingUp, TrendingDown, Zap, Siren, Award, Dumbbell, Shirt, ShieldCheck, History, Flame
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -184,20 +185,25 @@ function TestCard({ test, results = [], onLog }) {
 
       {/* Current + trend */}
       {latest && (
-        <div className="mt-3 flex items-center gap-4 text-xs">
-          <div>
-            <span className="text-muted-foreground">Latest: </span>
-            <span className="font-bold">{latest.value} {test.unit}</span>
-          </div>
-          {trend != null && trend !== 0 && (
-            <div className="flex items-center gap-1">
-              {trend > 0 ? <TrendingUp className="w-3 h-3 text-green-400" /> : <TrendingDown className="w-3 h-3 text-red-400" />}
-              <span className={trend > 0 ? "text-green-400" : "text-red-400"}>{trend > 0 ? "+" : ""}{Math.abs(trend).toFixed(1)}</span>
+        <div className="mt-3 space-y-1">
+          <div className="flex items-center gap-4 text-xs">
+            <div>
+              <span className="text-muted-foreground">Latest: </span>
+              <span className="font-bold">{latest.value} {test.unit}</span>
             </div>
-          )}
-          {previous && (
-            <span className="text-muted-foreground">Prev: {previous.value}</span>
-          )}
+            {trend != null && trend !== 0 && (
+              <div className="flex items-center gap-1">
+                {trend > 0 ? <TrendingUp className="w-3 h-3 text-green-400" /> : <TrendingDown className="w-3 h-3 text-red-400" />}
+                <span className={trend > 0 ? "text-green-400" : "text-red-400"}>{trend > 0 ? "+" : ""}{Math.abs(trend).toFixed(1)}</span>
+              </div>
+            )}
+            {previous && (
+              <span className="text-muted-foreground">Prev: {previous.value}</span>
+            )}
+          </div>
+          <p className="text-[10px] text-muted-foreground">
+            Logged {format(new Date(latest.date + "T00:00:00"), "MMM d, yyyy")}
+          </p>
         </div>
       )}
 
@@ -367,28 +373,48 @@ export default function PlayerAssessment({ profile }) {
 
   const logResult = useMutation({
     mutationFn: async ({ test_id, value, affects }) => {
-      // Calculate stat score (0-100 based on benchmark)
       const allTests = [...fitnessTests, ...skillTests];
       const testDef = allTests.find((t) => t.id === test_id);
       const bench = testDef ? getBenchmarkScore(testDef, value) : null;
       const statScore = bench?.score || 50;
+      const today = new Date().toISOString().split("T")[0];
 
+      // Save test result to history
       await base44.entities.SkillTestResult.create({
         player_id: profile.id,
         test_id,
         value,
-        date: new Date().toISOString().split("T")[0],
+        date: today,
         stat_score: statScore,
       });
 
       // Blend into profile stats: 70% current + 30% new
+      const updates = {};
       if (affects && profile.stats) {
         const currentStat = profile.stats[affects] || 50;
         const newStat = Math.round(currentStat * 0.7 + statScore * 0.3);
-        await base44.entities.PlayerProfile.update(profile.id, {
-          stats: { ...profile.stats, [affects]: newStat },
-        });
+        updates.stats = { ...profile.stats, [affects]: newStat };
       }
+
+      // Award XP for completing a test (15-25 XP based on score)
+      const xpEarned = bench ? Math.round(15 + (bench.score / 100) * 10) : 15;
+      updates.xp = (profile.xp || 0) + xpEarned;
+      updates.level = getLevel(updates.xp);
+
+      // Track streak
+      const lastActive = profile.last_active_date;
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split("T")[0];
+
+      if (lastActive === yesterdayStr) {
+        updates.streak_days = (profile.streak_days || 0) + 1;
+      } else if (lastActive !== today) {
+        updates.streak_days = 1;
+      }
+      updates.last_active_date = today;
+
+      await base44.entities.PlayerProfile.update(profile.id, updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["skill-test-results"] });
@@ -429,15 +455,18 @@ export default function PlayerAssessment({ profile }) {
 
       {/* Tab switch */}
       <Tabs value={testTab} onValueChange={setTestTab}>
-        <TabsList className="w-full bg-secondary grid grid-cols-3">
+        <TabsList className="w-full bg-secondary grid grid-cols-4">
           <TabsTrigger value="fitness" className="text-xs">
             <Timer className="w-3.5 h-3.5 mr-1" /> Fitness
           </TabsTrigger>
           <TabsTrigger value="skills" className="text-xs">
-            <Target className="w-3.5 h-3.5 mr-1" /> Position Skills
+            <Target className="w-3.5 h-3.5 mr-1" /> Skills
+          </TabsTrigger>
+          <TabsTrigger value="history" className="text-xs">
+            <History className="w-3.5 h-3.5 mr-1" /> History
           </TabsTrigger>
           <TabsTrigger value="equipment" className="text-xs">
-            <Shirt className="w-3.5 h-3.5 mr-1" /> Equipment
+            <Shirt className="w-3.5 h-3.5 mr-1" /> Gear
           </TabsTrigger>
         </TabsList>
 
@@ -485,6 +514,51 @@ export default function PlayerAssessment({ profile }) {
                   onLog={handleLog}
                 />
               ))}
+            </>
+          )}
+        </TabsContent>
+
+        <TabsContent value="history" className="mt-4 space-y-3">
+          {results.length === 0 ? (
+            <div className="text-center py-8 space-y-2">
+              <History className="w-10 h-10 text-muted-foreground mx-auto" />
+              <p className="text-sm text-muted-foreground">No tests logged yet.</p>
+              <p className="text-xs text-muted-foreground">Complete a fitness or skill test to start building your history.</p>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>{results.length} total results</span>
+                <span className="flex items-center gap-1"><Flame className="w-3 h-3 text-accent" /> {profile.xp || 0} XP total</span>
+              </div>
+              <div className="space-y-2">
+                {results
+                  .sort((a, b) => b.date.localeCompare(a.date))
+                  .slice(0, 30)
+                  .map((r) => {
+                    const allTests = [...fitnessTests, ...skillTests];
+                    const testDef = allTests.find((t) => t.id === r.test_id);
+                    const bench = testDef ? getBenchmarkScore(testDef, r.value) : null;
+                    const testName = testDef?.name || r.test_id;
+                    return (
+                      <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border">
+                        <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
+                          <Activity className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium truncate">{testName}</p>
+                          <p className="text-[10px] text-muted-foreground">{format(new Date(r.date + "T00:00:00"), "MMM d, yyyy")}</p>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-sm font-heading font-bold">{r.value} <span className="text-[10px] text-muted-foreground font-normal">{testDef?.unit}</span></p>
+                          {bench && (
+                            <span className="text-[10px] font-medium" style={{ color: bench.color }}>{bench.label}</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
             </>
           )}
         </TabsContent>

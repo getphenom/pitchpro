@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { format, startOfWeek } from "date-fns";
 import { Loader2, Dumbbell, Clock, Flame, Calendar, ChevronRight, Zap, Target, Shield, Footprints, Save, Timer, BookOpen, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { POSITION_LABELS } from "@/lib/gameData";
+import { POSITION_LABELS, getLevel } from "@/lib/gameData";
 import { motion } from "framer-motion";
 import TrainingPlanGenerator from "@/components/training/TrainingPlanGenerator";
 import TrainingCalendar from "@/components/training/TrainingCalendar";
@@ -130,11 +131,14 @@ function DrillCard({ drill, index, onTutorial }) {
   );
 }
 
+const currentWeekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
+
 export default function Training() {
   const [activeTab, setActiveTab] = useState("technical");
   const [showPlan, setShowPlan] = useState(false);
-  const [viewMode, setViewMode] = useState("drills"); // "drills" | "calendar" | "templates" | "warmup" | "schedule"
+  const [viewMode, setViewMode] = useState("drills");
   const [tutorialItem, setTutorialItem] = useState(null);
+  const queryClient = useQueryClient();
 
   const { data: profiles, isLoading } = useQuery({
     queryKey: ["profiles"],
@@ -142,6 +146,26 @@ export default function Training() {
   });
 
   const profile = profiles?.[0];
+
+  const { data: snapshots = [] } = useQuery({
+    queryKey: ["stat-snapshots", profile?.id],
+    queryFn: () => base44.entities.StatSnapshot.filter({ player_id: profile.id }, "-week_start", 5),
+    enabled: !!profile,
+  });
+
+  // Auto-snapshot stats for this week
+  useEffect(() => {
+    if (!profile || !snapshots) return;
+    const alreadySnapped = snapshots.some((s) => s.week_start === currentWeekStart);
+    if (alreadySnapped) return;
+    base44.entities.StatSnapshot.create({
+      player_id: profile.id,
+      week_start: currentWeekStart,
+      stats: profile.stats || {},
+      xp: profile.xp || 0,
+      level: getLevel(profile.xp || 0),
+    }).then(() => queryClient.invalidateQueries({ queryKey: ["stat-snapshots"] }));
+  }, [profile?.id, snapshots?.length]);
 
   const { data: dailyLogs = [] } = useQuery({
     queryKey: ["training-logs"],
