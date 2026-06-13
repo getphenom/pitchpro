@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { BADGES, getLevel, BADGE_CRITERIA } from "@/lib/gameData";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
-import { Trophy, Lock, TrendingUp } from "lucide-react";
+import { Trophy, Lock, TrendingUp, Sparkles, Award } from "lucide-react";
 
 const PROGRESS_HINTS = {
   streak_3: { hint: "3-day streak", goal: 3, metric: (p) => p.streak_days || 0 },
@@ -21,6 +23,7 @@ const PROGRESS_HINTS = {
 };
 
 export default function TrophyCase({ profile }) {
+  const [selectedBadgeId, setSelectedBadgeId] = useState(null);
   const earnedIds = profile.badges || [];
   const earnedCount = earnedIds.length;
   const totalCount = Object.keys(BADGES).length;
@@ -30,6 +33,11 @@ export default function TrophyCase({ profile }) {
     queryFn: () => base44.entities.DailyLog.filter({ player_id: profile.id }, "-date", 200),
     enabled: !!profile?.id,
   });
+
+  const selectedBadge = BADGES[selectedBadgeId];
+  const isSelectedEarned = earnedIds.includes(selectedBadgeId);
+  const selectedHint = PROGRESS_HINTS[selectedBadgeId];
+  const selectedProgress = selectedHint ? Math.min(Math.round((selectedHint.metric(profile) / selectedHint.goal) * 100), 100) : 0;
 
   return (
     <motion.div
@@ -76,10 +84,11 @@ export default function TrophyCase({ profile }) {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.05 * Object.keys(BADGES).indexOf(id) + 0.1 }}
-              className={`relative rounded-xl border p-3 flex items-center gap-3 transition-all ${
+              onClick={() => setSelectedBadgeId(id)}
+              className={`relative rounded-xl border p-3 flex items-center gap-3 transition-all cursor-pointer ${
                 earned
-                  ? "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/30"
-                  : "bg-secondary/50 border-border opacity-75"
+                  ? "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/30 hover:border-primary/50"
+                  : "bg-secondary/50 border-border opacity-75 hover:opacity-100"
               }`}
             >
               {/* Badge Icon */}
@@ -122,6 +131,87 @@ export default function TrophyCase({ profile }) {
           );
         })}
       </div>
+
+      {/* Badge Detail Dialog */}
+      <Dialog open={!!selectedBadgeId} onOpenChange={(open) => !open && setSelectedBadgeId(null)}>
+        <DialogContent className="sm:max-w-sm">
+          {selectedBadge && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-3">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl ${
+                    isSelectedEarned
+                      ? "bg-primary/20 animate-glow"
+                      : "bg-muted grayscale"
+                  }`}>
+                    {selectedBadge.icon}
+                  </div>
+                  <div className="text-left">
+                    <DialogTitle className="font-heading text-lg">
+                      {selectedBadge.name}
+                    </DialogTitle>
+                    <DialogDescription className="text-xs">
+                      {isSelectedEarned ? selectedBadge.desc : "Locked"}
+                    </DialogDescription>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              <div className="space-y-4">
+                {/* Status */}
+                <div className={`rounded-xl p-4 ${
+                  isSelectedEarned
+                    ? "bg-primary/10 border border-primary/20"
+                    : "bg-secondary/50 border border-border"
+                }`}>
+                  {isSelectedEarned ? (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Award className="w-5 h-5 text-accent" />
+                      <span className="font-semibold text-accent">Badge Earned!</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Lock className="w-4 h-4" />
+                        <span>{selectedHint?.hint || selectedBadge.desc}</span>
+                      </div>
+                      {selectedHint && (
+                        <div>
+                          <div className="w-full bg-muted rounded-full h-2">
+                            <div
+                              className="h-2 rounded-full bg-primary/50 transition-all"
+                              style={{ width: `${selectedProgress}%` }}
+                            />
+                          </div>
+                          <p className="text-[10px] text-muted-foreground mt-1">
+                            {selectedHint.metric(profile)} / {selectedHint.goal} — {selectedProgress}%
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Context Stats */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="text-center rounded-lg bg-secondary/50 p-2">
+                    <p className="text-lg font-heading font-bold text-primary">{profile.streak_days || 0}</p>
+                    <p className="text-[9px] text-muted-foreground">Day Streak</p>
+                  </div>
+                  <div className="text-center rounded-lg bg-secondary/50 p-2">
+                    <p className="text-lg font-heading font-bold text-primary">{getLevel(profile.xp || 0)}</p>
+                    <p className="text-[9px] text-muted-foreground">Level</p>
+                  </div>
+                  <div className="text-center rounded-lg bg-secondary/50 p-2">
+                    <p className="text-lg font-heading font-bold text-primary">{profile.xp || 0}</p>
+                    <p className="text-[9px] text-muted-foreground">Total XP</p>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }
