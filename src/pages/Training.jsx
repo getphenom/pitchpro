@@ -8,6 +8,7 @@ import { POSITION_LABELS } from "@/lib/gameData";
 import { motion } from "framer-motion";
 import TrainingPlanGenerator from "@/components/training/TrainingPlanGenerator";
 import TrainingCalendar from "@/components/training/TrainingCalendar";
+import FitnessTrainerChat from "@/components/agents/FitnessTrainerChat";
 
 const TRAINING_CATEGORIES = {
   technical: {
@@ -229,6 +230,15 @@ export default function Training() {
             </Tabs>
           </>
         )}
+
+        {/* Fitness Trainer Agent */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl bg-card border border-red-500/20 p-5"
+        >
+          <FitnessTrainerChat profile={profile} />
+        </motion.div>
       </div>
     </div>
   );
