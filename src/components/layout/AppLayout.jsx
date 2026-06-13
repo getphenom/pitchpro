@@ -1,10 +1,11 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Home, Dumbbell, UtensilsCrossed, Brain, Map, User, Trophy, Heart, Target, Timer, BarChart3 } from "lucide-react";
+import { Home, Dumbbell, UtensilsCrossed, Brain, Map, User, Trophy, Heart, Target, Timer, BarChart3, Calendar } from "lucide-react";
 import PostWorkoutNutritionReminder from "@/components/home/PostWorkoutNutritionReminder";
 
 const NAV_ITEMS = [
   { path: "/", icon: Home, label: "Home" },
   { path: "/training", icon: Dumbbell, label: "Train" },
+  { path: "/calendar", icon: Calendar, label: "Calendar" },
   { path: "/nutrition", icon: UtensilsCrossed, label: "Fuel" },
   { path: "/mental", icon: Brain, label: "Mind" },
   { path: "/tactics", icon: Map, label: "Tactics" },
