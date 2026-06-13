@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { POSITION_LABELS } from "@/lib/gameData";
 import { motion } from "framer-motion";
 import NutritionCoachChat from "@/components/agents/NutritionCoachChat";
+import NutritionVsTraining from "@/components/nutrition/NutritionVsTraining";
 
 export default function Nutrition() {
   const [mealPlan, setMealPlan] = useState(null);
@@ -279,6 +280,9 @@ Focus on real, practical foods that a ${profile.age}-year-old would actually eat
             </Button>
           </div>
         )}
+
+        {/* Nutrition vs Training Comparison */}
+        <NutritionVsTraining profile={profile} />
 
         {/* Nutrition Coach Agent */}
         <motion.div
