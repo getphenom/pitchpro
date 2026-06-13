@@ -1,0 +1,91 @@
+{
+  "name": "InjuryLog",
+  "type": "object",
+  "properties": {
+    "player_id": {
+      "type": "string",
+      "description": "Reference to player profile"
+    },
+    "body_part": {
+      "type": "string",
+      "enum": [
+        "ankle",
+        "knee",
+        "hamstring",
+        "quad",
+        "groin",
+        "hip",
+        "back",
+        "shoulder",
+        "foot",
+        "calf",
+        "shin",
+        "elbow",
+        "wrist",
+        "neck",
+        "other"
+      ],
+      "description": "Affected body part"
+    },
+    "injury_type": {
+      "type": "string",
+      "enum": [
+        "soreness",
+        "strain",
+        "sprain",
+        "contusion",
+        "fracture",
+        "tendonitis",
+        "other"
+      ],
+      "description": "Type of injury"
+    },
+    "pain_level": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "description": "Pain level 1-10"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "recovering",
+        "healed"
+      ],
+      "default": "active",
+      "description": "Current injury status"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date injury started"
+    },
+    "recovery_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date fully healed"
+    },
+    "recovery_progress": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Recovery progress 0-100"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notes about the injury"
+    },
+    "training_modifications": {
+      "type": "string",
+      "description": "Recommended training modifications"
+    }
+  },
+  "required": [
+    "player_id",
+    "body_part",
+    "injury_type",
+    "pain_level"
+  ]
+}
