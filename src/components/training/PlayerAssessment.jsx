@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Loader2, Timer, Footprints, ArrowUp, Gauge, Activity, Target, ClipboardCheck,
-  Trophy, TrendingUp, TrendingDown, Zap, Siren, Award, Dumbbell, Shirt, ShieldCheck, History, Flame
+  Trophy, TrendingUp, TrendingDown, Zap, Siren, Award, Dumbbell, Shirt, ShieldCheck, History, Flame, ChevronRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import TestDetailDialog from "@/components/training/TestDetailDialog";
 
 // ─── Age Group Definitions ───
 const AGE_GROUPS = {
@@ -145,83 +146,84 @@ function getBenchmarkScore(test, result) {
 // ─── Components ───
 
 function TestCard({ test, results = [], onLog }) {
+  const [open, setOpen] = useState(false);
   const latest = results.sort((a, b) => b.date.localeCompare(a.date))[0];
   const previous = results.sort((a, b) => b.date.localeCompare(a.date))[1];
   const benchmark = latest ? getBenchmarkScore(test, latest.value) : null;
   const trend = latest && previous ? (test.better === "lower" ? previous.value - latest.value : latest.value - previous.value) : null;
 
-  const [inputValue, setInputValue] = useState("");
-  const [logging, setLogging] = useState(false);
-
-  const handleLog = async () => {
-    const val = parseFloat(inputValue);
-    if (isNaN(val)) return;
-    setLogging(true);
-    await onLog(test, val);
-    setInputValue("");
-    setLogging(false);
-  };
-
   return (
-    <div className="rounded-xl bg-card border border-border p-4 transition-all hover:border-primary/20">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${benchmark ? "" : "bg-secondary"}`}
-            style={benchmark ? { backgroundColor: benchmark.color + "18" } : {}}>
-            <test.icon className="w-4 h-4" style={{ color: benchmark?.color }} />
+    <>
+      <TestDetailDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        test={test}
+        results={results}
+        onLog={onLog}
+      />
+      <div
+        onClick={() => setOpen(true)}
+        className="rounded-xl bg-card border border-border p-4 hover:border-primary/30 cursor-pointer transition-all group"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${benchmark ? "" : "bg-secondary"}`}
+              style={benchmark ? { backgroundColor: benchmark.color + "18" } : {}}>
+              <test.icon className="w-4 h-4" style={{ color: benchmark?.color }} />
+            </div>
+            <div className="min-w-0">
+              <h4 className="font-semibold text-sm truncate">{test.name}</h4>
+              <p className="text-[10px] text-muted-foreground">{test.benchmark[0]}–{test.benchmark[3]} {test.unit}</p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <h4 className="font-semibold text-sm truncate">{test.name}</h4>
-            <p className="text-[10px] text-muted-foreground">{test.benchmark[0]}–{test.benchmark[3]} {test.unit}</p>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {benchmark && (
+              <span className="text-xs font-heading font-bold px-2 py-1 rounded-md"
+                style={{ backgroundColor: benchmark.color + "18", color: benchmark.color }}>
+                {benchmark.label}
+              </span>
+            )}
+            <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
         </div>
-        {benchmark && (
-          <span className="text-xs font-heading font-bold px-2 py-1 rounded-md flex-shrink-0"
-            style={{ backgroundColor: benchmark.color + "18", color: benchmark.color }}>
-            {benchmark.label}
-          </span>
+
+        {latest && (
+          <div className="mt-3 space-y-1">
+            <div className="flex items-center gap-4 text-xs">
+              <div>
+                <span className="text-muted-foreground">Latest: </span>
+                <span className="font-bold">{latest.value} {test.unit}</span>
+              </div>
+              {trend != null && trend !== 0 && (
+                <div className="flex items-center gap-1">
+                  {trend > 0 ? <TrendingUp className="w-3 h-3 text-green-400" /> : <TrendingDown className="w-3 h-3 text-red-400" />}
+                  <span className={trend > 0 ? "text-green-400" : "text-red-400"}>{trend > 0 ? "+" : ""}{Math.abs(trend).toFixed(1)}</span>
+                </div>
+              )}
+              {previous && (
+                <span className="text-muted-foreground">Prev: {previous.value}</span>
+              )}
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] text-muted-foreground">
+                Logged {format(new Date(latest.date + "T00:00:00"), "MMM d, yyyy")}
+              </p>
+              <span className="text-[10px] text-muted-foreground group-hover:text-primary transition-colors flex items-center gap-0.5">
+                Tap to log sets
+              </span>
+            </div>
+          </div>
+        )}
+
+        {!latest && (
+          <div className="mt-3">
+            <span className="text-[10px] text-muted-foreground group-hover:text-primary transition-colors">
+              Tap to start logging
+            </span>
+          </div>
         )}
       </div>
-
-      {/* Current + trend */}
-      {latest && (
-        <div className="mt-3 space-y-1">
-          <div className="flex items-center gap-4 text-xs">
-            <div>
-              <span className="text-muted-foreground">Latest: </span>
-              <span className="font-bold">{latest.value} {test.unit}</span>
-            </div>
-            {trend != null && trend !== 0 && (
-              <div className="flex items-center gap-1">
-                {trend > 0 ? <TrendingUp className="w-3 h-3 text-green-400" /> : <TrendingDown className="w-3 h-3 text-red-400" />}
-                <span className={trend > 0 ? "text-green-400" : "text-red-400"}>{trend > 0 ? "+" : ""}{Math.abs(trend).toFixed(1)}</span>
-              </div>
-            )}
-            {previous && (
-              <span className="text-muted-foreground">Prev: {previous.value}</span>
-            )}
-          </div>
-          <p className="text-[10px] text-muted-foreground">
-            Logged {format(new Date(latest.date + "T00:00:00"), "MMM d, yyyy")}
-          </p>
-        </div>
-      )}
-
-      {/* Input */}
-      <div className="mt-3 flex items-center gap-2">
-        <input
-          type="number"
-          step="any"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          placeholder={test.unit}
-          className="flex-1 bg-secondary border border-border rounded-lg px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-        />
-        <Button size="sm" onClick={handleLog} disabled={logging || !inputValue} className="flex-shrink-0">
-          {logging ? <Loader2 className="w-4 h-4 animate-spin" /> : "Log"}
-        </Button>
-      </div>
-    </div>
+    </>
   );
 }
 
@@ -359,6 +361,7 @@ function EquipmentChecklist({ profile }) {
 
 export default function PlayerAssessment({ profile }) {
   const [testTab, setTestTab] = useState("fitness");
+  const [selectedHistoryTest, setSelectedHistoryTest] = useState(null);
   const queryClient = useQueryClient();
 
   const ageGroup = getAgeGroup(profile.age);
@@ -440,6 +443,14 @@ export default function PlayerAssessment({ profile }) {
 
   return (
     <div className="space-y-5">
+      <TestDetailDialog
+        open={!!selectedHistoryTest}
+        onClose={() => setSelectedHistoryTest(null)}
+        test={selectedHistoryTest?.test}
+        results={selectedHistoryTest?.testResults || []}
+        onLog={handleLog}
+      />
+
       {/* Age Group Banner */}
       <div className="rounded-xl border p-4" style={{ borderColor: ageGroupInfo.color + "30", backgroundColor: ageGroupInfo.color + "08" }}>
         <div className="flex items-center gap-3">
@@ -541,7 +552,13 @@ export default function PlayerAssessment({ profile }) {
                     const bench = testDef ? getBenchmarkScore(testDef, r.value) : null;
                     const testName = testDef?.name || r.test_id;
                     return (
-                      <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border">
+                      <div
+                        key={r.id}
+                        onClick={() => {
+                          if (testDef) setSelectedHistoryTest({ test: testDef, testResults: results.filter((rr) => rr.test_id === r.test_id) });
+                        }}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border hover:border-primary/30 cursor-pointer transition-all group"
+                      >
                         <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
                           <Activity className="w-4 h-4 text-muted-foreground" />
                         </div>
@@ -549,11 +566,14 @@ export default function PlayerAssessment({ profile }) {
                           <p className="text-xs font-medium truncate">{testName}</p>
                           <p className="text-[10px] text-muted-foreground">{format(new Date(r.date + "T00:00:00"), "MMM d, yyyy")}</p>
                         </div>
-                        <div className="text-right flex-shrink-0">
-                          <p className="text-sm font-heading font-bold">{r.value} <span className="text-[10px] text-muted-foreground font-normal">{testDef?.unit}</span></p>
-                          {bench && (
-                            <span className="text-[10px] font-medium" style={{ color: bench.color }}>{bench.label}</span>
-                          )}
+                        <div className="text-right flex-shrink-0 flex items-center gap-2">
+                          <div>
+                            <p className="text-sm font-heading font-bold">{r.value} <span className="text-[10px] text-muted-foreground font-normal">{testDef?.unit}</span></p>
+                            {bench && (
+                              <span className="text-[10px] font-medium" style={{ color: bench.color }}>{bench.label}</span>
+                            )}
+                          </div>
+                          <ChevronRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                       </div>
                     );
