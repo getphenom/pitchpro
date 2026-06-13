@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, UtensilsCrossed, Sparkles, Apple, Beef, Wheat, Fish, Salad } from "lucide-react";
+import { Loader2, UtensilsCrossed, Sparkles, Apple, Beef, Wheat, Fish, Salad, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import TutorialModal from "@/components/shared/TutorialModal";
 import { POSITION_LABELS } from "@/lib/gameData";
 import { motion } from "framer-motion";
 import NutritionCoachChat from "@/components/agents/NutritionCoachChat";
@@ -13,6 +14,7 @@ export default function Nutrition() {
   const [mealPlan, setMealPlan] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("plan");
+  const [tutorialItem, setTutorialItem] = useState(null);
 
   const { data: profiles, isLoading } = useQuery({
     queryKey: ["profiles"],
@@ -113,6 +115,14 @@ Focus on real, practical foods that a ${profile.age}-year-old would actually eat
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+        <TutorialModal
+          open={!!tutorialItem}
+          onClose={() => setTutorialItem(null)}
+          item={tutorialItem}
+          context={`This is a meal for a ${profile.age}-year-old soccer player. Include preparation instructions, cooking tips, and ingredient substitutions.`}
+          triggerLabel={tutorialItem?.name || "How to Prepare"}
+        />
+
         <div>
           <h1 className="text-2xl font-heading font-bold">Nutrition</h1>
           <p className="text-xs text-muted-foreground mt-1">Fuel your performance</p>
@@ -211,7 +221,15 @@ Focus on real, practical foods that a ${profile.age}-year-old would actually eat
                       ))}
                     </div>
                     {meal.note && <p className="text-xs text-muted-foreground">{meal.note}</p>}
-                    <p className="text-xs text-primary font-medium mt-1">{meal.calories} kcal</p>
+                    <div className="flex items-center justify-between mt-1">
+                      <p className="text-xs text-primary font-medium">{meal.calories} kcal</p>
+                      <button
+                        onClick={() => setTutorialItem(meal)}
+                        className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5"
+                      >
+                        <BookOpen className="w-3 h-3" /> How to Prepare
+                      </button>
+                    </div>
                   </motion.div>
                 ))}
               </TabsContent>
@@ -238,7 +256,15 @@ Focus on real, practical foods that a ${profile.age}-year-old would actually eat
                       ))}
                     </div>
                     {meal.note && <p className="text-xs text-muted-foreground">{meal.note}</p>}
-                    <p className="text-xs text-primary font-medium mt-1">{meal.calories} kcal</p>
+                    <div className="flex items-center justify-between mt-1">
+                      <p className="text-xs text-primary font-medium">{meal.calories} kcal</p>
+                      <button
+                        onClick={() => setTutorialItem(meal)}
+                        className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5"
+                      >
+                        <BookOpen className="w-3 h-3" /> How to Prepare
+                      </button>
+                    </div>
                   </motion.div>
                 ))}
               </TabsContent>

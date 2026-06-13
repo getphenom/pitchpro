@@ -2,7 +2,8 @@ import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Loader2, Brain, Sparkles, Eye, Heart, Shield, Target, Timer, Play } from "lucide-react";
+import { Loader2, Brain, Sparkles, Eye, Heart, Shield, Target, Timer, Play, BookOpen } from "lucide-react";
+import TutorialModal from "@/components/shared/TutorialModal";
 import { Button } from "@/components/ui/button";
 import { POSITION_LABELS } from "@/lib/gameData";
 import { motion } from "framer-motion";
@@ -100,6 +101,7 @@ export default function Mental() {
   const [currentStep, setCurrentStep] = useState(0);
   const [customAdvice, setCustomAdvice] = useState(null);
   const [loadingAdvice, setLoadingAdvice] = useState(false);
+  const [tutorialItem, setTutorialItem] = useState(null);
 
   const queryClient = useQueryClient();
 
@@ -211,6 +213,14 @@ Make it relatable and inspiring for a young player.`,
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+        <TutorialModal
+          open={!!tutorialItem}
+          onClose={() => setTutorialItem(null)}
+          item={tutorialItem}
+          context={`This is a mental training exercise for a ${profile ? POSITION_LABELS[profile.position] : "soccer player"}. It helps build mental strength for on-field performance.`}
+          triggerLabel={tutorialItem?.title || "Tutorial"}
+        />
+
         <div>
           <h1 className="text-2xl font-heading font-bold">Mental Game</h1>
           <p className="text-xs text-muted-foreground mt-1">Train your mind like the pros</p>
@@ -240,6 +250,12 @@ Make it relatable and inspiring for a young player.`,
                   <span className="text-xs text-muted-foreground">{ex.duration}</span>
                   <span className="text-xs text-accent font-semibold">+{ex.xp} XP</span>
                 </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setTutorialItem(ex); }}
+                  className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5 mt-2"
+                >
+                  <BookOpen className="w-3 h-3" /> How To
+                </button>
               </div>
             </motion.div>
           ))}

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Dumbbell, Clock, Flame, Calendar, ChevronRight, Zap, Target, Shield, Footprints, Save, Timer } from "lucide-react";
+import { Loader2, Dumbbell, Clock, Flame, Calendar, ChevronRight, Zap, Target, Shield, Footprints, Save, Timer, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { POSITION_LABELS } from "@/lib/gameData";
@@ -11,6 +11,7 @@ import TrainingCalendar from "@/components/training/TrainingCalendar";
 import TrainingTemplates from "@/components/training/TrainingTemplates";
 import WarmUpGenerator from "@/components/training/WarmUpGenerator";
 import TrainingSchedule from "@/components/training/TrainingSchedule";
+import TutorialModal from "@/components/shared/TutorialModal";
 import FitnessTrainerChat from "@/components/agents/FitnessTrainerChat";
 
 const TRAINING_CATEGORIES = {
@@ -93,13 +94,13 @@ const TRAINING_CATEGORIES = {
   },
 };
 
-function DrillCard({ drill, index }) {
+function DrillCard({ drill, index, onTutorial }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
-      className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border hover:border-primary/30 transition-all"
+      className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border hover:border-primary/30 transition-all group"
     >
       <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
         <Zap className="w-5 h-5 text-primary" />
@@ -117,6 +118,12 @@ function DrillCard({ drill, index }) {
           <Flame className="w-3 h-3" />
           {drill.xp} XP
         </div>
+        <button
+          onClick={(e) => { e.stopPropagation(); onTutorial?.(drill); }}
+          className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5 opacity-0 group-hover:opacity-100"
+        >
+          <BookOpen className="w-3 h-3" /> How To
+        </button>
       </div>
     </motion.div>
   );
@@ -126,6 +133,7 @@ export default function Training() {
   const [activeTab, setActiveTab] = useState("technical");
   const [showPlan, setShowPlan] = useState(false);
   const [viewMode, setViewMode] = useState("drills"); // "drills" | "calendar" | "templates" | "warmup" | "schedule"
+  const [tutorialItem, setTutorialItem] = useState(null);
 
   const { data: profiles, isLoading } = useQuery({
     queryKey: ["profiles"],
@@ -233,6 +241,14 @@ export default function Training() {
           </div>
         </div>
 
+        <TutorialModal
+          open={!!tutorialItem}
+          onClose={() => setTutorialItem(null)}
+          item={tutorialItem}
+          context={`This is a ${tutorialItem?.category || "training"} drill for a ${profile ? POSITION_LABELS[profile.position] : "soccer player"} at ${level} level.`}
+          triggerLabel={tutorialItem?.name || "Tutorial"}
+        />
+
         {viewMode === "calendar" ? (
           <TrainingCalendar profile={profile} dailyLogs={dailyLogs} />
         ) : viewMode === "templates" ? (
@@ -264,7 +280,7 @@ export default function Training() {
                   </div>
                   <div className="space-y-2">
                     {(cat.drills[level] || []).map((drill, i) => (
-                      <DrillCard key={i} drill={drill} index={i} />
+                      <DrillCard key={i} drill={drill} index={i} onTutorial={setTutorialItem} />
                     ))}
                   </div>
                 </TabsContent>

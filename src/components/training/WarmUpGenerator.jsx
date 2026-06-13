@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Loader2, Sparkles, Clock, Move, Timer } from "lucide-react";
+import { Loader2, Sparkles, Clock, Move, Timer, BookOpen } from "lucide-react";
+import TutorialModal from "@/components/shared/TutorialModal";
 import { POSITION_LABELS } from "@/lib/gameData";
 import { motion } from "framer-motion";
 
@@ -145,6 +146,7 @@ const PHASES = [
 export default function WarmUpGenerator({ profile }) {
   const [generating, setGenerating] = useState(false);
   const [routine, setRoutine] = useState(null);
+  const [tutorialItem, setTutorialItem] = useState(null);
 
   const position = profile?.position || "central_mid";
   const warmup = POSITION_WARMUP[position] || POSITION_WARMUP.central_mid;
@@ -291,6 +293,14 @@ Return a structured warm-up with timed segments.`;
   // Generated routine view
   return (
     <div className="space-y-4">
+      <TutorialModal
+        open={!!tutorialItem}
+        onClose={() => setTutorialItem(null)}
+        item={tutorialItem}
+        context={`This is a warm-up exercise for a ${positionLabel}. It's part of a 10-minute pre-training warm-up routine.`}
+        triggerLabel={tutorialItem?.name || "Tutorial"}
+      />
+
       <div className="rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/5 border border-orange-500/20 p-5">
         <h3 className="font-heading font-bold text-lg">{routine.title}</h3>
         <p className="text-sm text-muted-foreground mt-1">{routine.focus}</p>
@@ -335,6 +345,12 @@ Return a structured warm-up with timed segments.`;
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">{ex.description}</p>
+                  <button
+                    onClick={() => setTutorialItem(ex)}
+                    className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5 mt-1"
+                  >
+                    <BookOpen className="w-3 h-3" /> How To
+                  </button>
                 </div>
               </div>
             ))}

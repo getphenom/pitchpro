@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Map, Sparkles, ChevronRight } from "lucide-react";
+import { Loader2, Map, Sparkles, ChevronRight, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import TutorialModal from "@/components/shared/TutorialModal";
 import { POSITION_LABELS } from "@/lib/gameData";
 import { motion } from "framer-motion";
 import TacticalCoachChat from "@/components/agents/TacticalCoachChat";
@@ -102,6 +103,7 @@ export default function Tactics() {
   const [selectedFormation, setSelectedFormation] = useState(null);
   const [tacticalPlan, setTacticalPlan] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [tutorialItem, setTutorialItem] = useState(null);
 
   const { data: profiles, isLoading } = useQuery({
     queryKey: ["profiles"],
@@ -158,6 +160,14 @@ Make it practical and age-appropriate.`,
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+        <TutorialModal
+          open={!!tutorialItem}
+          onClose={() => setTutorialItem(null)}
+          item={tutorialItem}
+          context={`This is a tactical drill for a ${POSITION_LABELS[profile.position]}. Include detailed setup instructions, coaching points, and progression ideas.`}
+          triggerLabel={tutorialItem?.name || "Tutorial"}
+        />
+
         <div>
           <h1 className="text-2xl font-heading font-bold">Tactical IQ</h1>
           <p className="text-xs text-muted-foreground mt-1">
@@ -285,6 +295,27 @@ Make it practical and age-appropriate.`,
                     <div key={i} className="flex items-start gap-2 mb-2">
                       <span className="text-primary text-xs font-bold">{p.name}:</span>
                       <p className="text-xs text-muted-foreground">{p.reason}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {tacticalPlan.tactical_drills?.length > 0 && (
+                <div className="rounded-xl bg-card border border-border p-4">
+                  <h4 className="font-semibold text-sm mb-3">⚽ Tactical Drills</h4>
+                  {tacticalPlan.tactical_drills.map((drill, i) => (
+                    <div key={i} className="mb-3 last:mb-0 pb-3 last:pb-0 border-b last:border-0 border-border">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium">{drill.name}</p>
+                        <span className="text-xs text-muted-foreground">{drill.duration}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">{drill.description}</p>
+                      <button
+                        onClick={() => setTutorialItem(drill)}
+                        className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5 mt-1"
+                      >
+                        <BookOpen className="w-3 h-3" /> How To
+                      </button>
                     </div>
                   ))}
                 </div>
