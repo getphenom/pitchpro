@@ -13,6 +13,7 @@ import { POSITION_LABELS, getLevel, LEVEL_TITLES, STAT_COLORS } from "@/lib/game
 import { useTheme } from "@/lib/ThemeProvider";
 import { PILLARS } from "@/lib/assessmentData";
 import PlayerAssessment from "@/components/assessment/PlayerAssessment";
+import FifaPlayerCard from "@/components/profile/FifaPlayerCard";
 import { motion } from "framer-motion";
 
 export default function Profile() {
@@ -108,6 +109,9 @@ export default function Profile() {
             <XpBar xp={profile.xp || 0} />
           </div>
         </motion.div>
+
+        {/* FIFA Player Card */}
+        <FifaPlayerCard />
 
         {/* Quick Stats */}
         <div className="grid grid-cols-3 gap-3">
