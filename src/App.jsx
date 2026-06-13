@@ -21,6 +21,7 @@ import Tactics from "@/pages/Tactics";
 import Profile from "@/pages/Profile";
 import Injury from "@/pages/Injury";
 import Development from "@/pages/Development";
+import Recovery from "@/pages/Recovery";
 import Onboarding from "@/pages/Onboarding";
 
 const AuthenticatedApp = () => {
@@ -63,6 +64,7 @@ const AuthenticatedApp = () => {
           <Route path="/profile" element={<Profile />} />
           <Route path="/injury" element={<Injury />} />
           <Route path="/development" element={<Development />} />
+          <Route path="/recovery" element={<Recovery />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />
