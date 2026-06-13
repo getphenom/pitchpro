@@ -1,259 +1,283 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Loader2, Sparkles, ChevronLeft, ChevronRight, CheckCircle2, Clock, Calendar as CalendarIcon, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Loader2, Sparkles, Clock, MapPin, Dumbbell, Brain, Apple, Moon, RefreshCw } from "lucide-react";
-import { POSITION_LABELS, LEVEL_TITLES, getLevel } from "@/lib/gameData";
 import { motion } from "framer-motion";
-import { format, addDays, startOfWeek } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isToday, isSameMonth } from "date-fns";
+import TutorialModal from "@/components/shared/TutorialModal";
 
-const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-const DAY_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-const TIME_SLOTS = ["Morning", "Afternoon", "Evening"];
-
-const ACTIVITY_ICONS = {
-  training: { icon: <Dumbbell className="w-4 h-4" />, bg: "bg-green-500/15 border-green-500/30 text-green-400" },
-  nutrition: { icon: <Apple className="w-4 h-4" />, bg: "bg-red-500/15 border-red-500/30 text-red-400" },
-  mental: { icon: <Brain className="w-4 h-4" />, bg: "bg-blue-500/15 border-blue-500/30 text-blue-400" },
-  rest: { icon: <Moon className="w-4 h-4" />, bg: "bg-purple-500/15 border-purple-500/30 text-purple-400" },
-  match: { icon: <MapPin className="w-4 h-4" />, bg: "bg-accent/20 border-accent/40 text-accent" },
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const CATEGORY_COLORS = {
+  technical: "bg-blue-500/15 border-blue-500/30 text-blue-400",
+  physical: "bg-green-500/15 border-green-500/30 text-green-400",
+  tactical: "bg-orange-500/15 border-orange-500/30 text-orange-400",
+  mental: "bg-purple-500/15 border-purple-500/30 text-purple-400",
+  recovery: "bg-teal-500/15 border-teal-500/30 text-teal-400",
 };
 
-function ScheduleDay({ day, schedule, index }) {
-  const isRest = schedule.type === "rest";
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
-      className={`rounded-xl border p-4 ${isRest ? "bg-purple-500/5 border-purple-500/20" : "bg-card border-border"}`}
-    >
-      <div className="flex items-center justify-between mb-3">
-        <div>
-          <h4 className="font-heading font-bold text-sm">{day}</h4>
-          <p className="text-xs text-muted-foreground">{schedule.focus}</p>
-        </div>
-        {isRest ? (
-          <span className="flex items-center gap-1 text-xs text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full">
-            <Moon className="w-3 h-3" /> Rest
-          </span>
-        ) : (
-          <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full font-medium">
-            {schedule.type_label}
-          </span>
-        )}
-      </div>
-
-      {isRest ? (
-        <p className="text-xs text-muted-foreground italic">
-          Active recovery — light stretching, foam rolling, and hydration focus.
-        </p>
-      ) : schedule.slots?.length > 0 ? (
-        <div className="space-y-1.5">
-          {schedule.slots.map((slot, j) => {
-            const activity = ACTIVITY_ICONS[slot.type] || ACTIVITY_ICONS.training;
-            return (
-              <div key={j} className="flex items-start gap-2.5">
-                <span className="text-xs font-semibold text-muted-foreground w-14 flex-shrink-0 pt-0.5">
-                  {slot.time}
-                </span>
-                <div className={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 flex-1 ${activity.bg}`}>
-                  {activity.icon}
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium">{slot.activity}</p>
-                    {slot.detail && (
-                      <p className="text-[10px] opacity-70 mt-0.5">{slot.detail}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : null}
-    </motion.div>
-  );
-}
-
 export default function TrainingSchedule({ profile }) {
-  const [schedule, setSchedule] = useState(null);
-  const [generating, setGenerating] = useState(false);
-  const [selectedDay, setSelectedDay] = useState(null);
+  const queryClient = useQueryClient();
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [tutorialItem, setTutorialItem] = useState(null);
 
-  const level = profile.skill_level || "beginner";
-  const positionLabel = POSITION_LABELS[profile.position] || profile.position;
-  const weeklyDays = profile.weekly_training_days || 5;
-  const age = profile.age || 14;
+  const { data: plans = [], isLoading: loadingPlan } = useQuery({
+    queryKey: ["development-plans", profile?.id],
+    queryFn: () => base44.entities.DevelopmentPlan.filter({ player_id: profile.id, status: "active" }, "-created_date", 1),
+    enabled: !!profile,
+  });
 
-  const generateSchedule = async () => {
-    setGenerating(true);
+  const activePlan = plans?.[0];
 
-    const prompt = `Create a detailed weekly training schedule for a ${age}-year-old soccer player who plays as a ${positionLabel} at ${level} level.
+  const daysInMonth = useMemo(() => {
+    const start = startOfMonth(currentMonth);
+    const end = endOfMonth(currentMonth);
+    return eachDayOfInterval({ start, end });
+  }, [currentMonth]);
 
-They train ${weeklyDays} days per week. Their preferred foot is ${profile.preferred_foot || "right"}.
+  const startingDayIndex = getDay(startOfMonth(currentMonth));
 
-Create a day-by-day schedule for a full week (Monday through Sunday). For each day include:
-- The day's focus (technical, physical, tactical, mental, rest/recovery, or match)
-- Time slots (morning, afternoon, evening) with specific activities
-- Each activity should have a name, short description, and approx duration in minutes
-- Proper rest and recovery built in (at least ${7 - weeklyDays} rest days)
-- Include meals/nutrition timing around training (pre and post-training meals)
-- Include sleep targets for each day
+  const toggleDayComplete = useMutation({
+    mutationFn: async ({ weekIdx, dayIdx }) => {
+      if (!activePlan) return;
+      const updatedWeeks = [...activePlan.weekly_goals];
+      const day = updatedWeeks[weekIdx].daily_goals[dayIdx];
+      day.completed = !day.completed;
+      return base44.entities.DevelopmentPlan.update(activePlan.id, { weekly_goals: updatedWeeks });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["development-plans"] });
+    },
+  });
 
-Tailor specific drills and exercises to the ${positionLabel} position specifically. 
-
-For ages 10-13: keep volume lower, focus on fun and fundamentals
-For ages 14-16: moderate volume, introduce more tactical concepts
-For ages 17+: higher intensity, match-like conditions`;
-
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          schedule_name: { type: "string" },
-          overview: { type: "string" },
-          weekly_theme: { type: "string" },
-          total_training_hours: { type: "number" },
-          days: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                day: { type: "string", enum: DAY_NAMES },
-                focus: { type: "string" },
-                type: { type: "string", enum: ["technical", "physical", "tactical", "mental", "rest", "match", "mixed"] },
-                type_label: { type: "string" },
-                slots: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      time: { type: "string" },
-                      type: { type: "string", enum: ["training", "nutrition", "mental", "rest", "match"] },
-                      activity: { type: "string" },
-                      detail: { type: "string" },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
-
-    setSchedule(result);
-    setGenerating(false);
-    setSelectedDay(null);
+  // Map a date to the corresponding week in the plan
+  const getPlanForDate = (date) => {
+    if (!activePlan?.weekly_goals) return null;
+    const planStart = new Date(activePlan.start_date);
+    const diffDays = Math.floor((date - planStart) / (1000 * 60 * 60 * 24));
+    const weekIdx = Math.floor(diffDays / 7);
+    if (weekIdx < 0 || weekIdx >= activePlan.weekly_goals.length) return null;
+    const week = activePlan.weekly_goals[weekIdx];
+    const dayOfWeek = getDay(date); // 0=Sun, 1=Mon...
+    const dayIdx = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Convert to Mon-Fri index
+    if (dayIdx >= week.daily_goals?.length) return null;
+    return { week, weekIdx, dayIdx, dailyGoal: week.daily_goals[dayIdx] };
   };
 
-  if (generating) {
+  const selectedDayPlan = selectedDate ? getPlanForDate(selectedDate) : null;
+
+  const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+  const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
+
+  if (loadingPlan) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 gap-4">
-        <div className="relative">
-          <Loader2 className="w-12 h-12 animate-spin text-primary" />
-          <Sparkles className="w-5 h-5 text-accent absolute -top-1 -right-1 animate-pulse" />
-        </div>
-        <p className="text-sm text-muted-foreground">Building your personalized schedule...</p>
-        <p className="text-xs text-muted-foreground/60 max-w-xs text-center">
-          Tailoring training, nutrition, and recovery for a {age}-year-old {positionLabel}
-        </p>
-      </div>
-    );
-  }
-
-  if (!schedule) {
-    const monday = startOfWeek(new Date(), { weekStartsOn: 1 });
-
-    return (
-      <div className="space-y-4">
-        <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-6 text-center space-y-4">
-          <div className="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto">
-            <Clock className="w-8 h-8 text-primary" />
-          </div>
-          <div>
-            <h3 className="font-heading font-bold text-lg">Weekly Training Schedule</h3>
-            <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
-              Get a detailed day-by-day schedule built for a {age}-year-old {positionLabel} ({level}). 
-              Includes training sessions, meal timing, mental work, and recovery.
-            </p>
-          </div>
-          <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1"><Dumbbell className="w-3 h-3 text-green-400" /> Training</span>
-            <span className="flex items-center gap-1"><Apple className="w-3 h-3 text-red-400" /> Meals</span>
-            <span className="flex items-center gap-1"><Brain className="w-3 h-3 text-blue-400" /> Mental</span>
-            <span className="flex items-center gap-1"><Moon className="w-3 h-3 text-purple-400" /> Recovery</span>
-          </div>
-          <Button className="bg-primary hover:bg-primary/90" onClick={generateSchedule}>
-            <Sparkles className="w-4 h-4 mr-2" /> Generate My Schedule
-          </Button>
-        </div>
-
-        {/* Quick info */}
-        <div className="rounded-xl bg-card border border-border p-4">
-          <h4 className="font-heading font-bold text-xs tracking-wider uppercase text-muted-foreground mb-3">
-            Your Training Profile
-          </h4>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-secondary/50 rounded-lg p-3">
-              <p className="text-[10px] text-muted-foreground">Position</p>
-              <p className="text-sm font-semibold">{positionLabel}</p>
-            </div>
-            <div className="bg-secondary/50 rounded-lg p-3">
-              <p className="text-[10px] text-muted-foreground">Level</p>
-              <p className="text-sm font-semibold capitalize">{level}</p>
-            </div>
-            <div className="bg-secondary/50 rounded-lg p-3">
-              <p className="text-[10px] text-muted-foreground">Age</p>
-              <p className="text-sm font-semibold">{age} years</p>
-            </div>
-            <div className="bg-secondary/50 rounded-lg p-3">
-              <p className="text-[10px] text-muted-foreground">Training Days</p>
-              <p className="text-sm font-semibold">{weeklyDays}/week</p>
-            </div>
-          </div>
-        </div>
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 p-5">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-heading font-bold text-lg">{schedule.schedule_name}</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">{schedule.weekly_theme}</p>
+      <TutorialModal
+        open={!!tutorialItem}
+        onClose={() => setTutorialItem(null)}
+        item={tutorialItem}
+        context={`This is a training drill from the development plan. Explain proper execution, key coaching points, and progression ideas for a ${profile.age}-year-old soccer player.`}
+        triggerLabel={tutorialItem?.drill_name || "Tutorial"}
+      />
+
+      {/* Month header */}
+      <div className="flex items-center justify-between">
+        <button onClick={prevMonth} className="w-8 h-8 rounded-lg hover:bg-secondary flex items-center justify-center">
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+        <h3 className="font-heading font-bold text-sm">
+          {format(currentMonth, "MMMM yyyy")}
+        </h3>
+        <button onClick={nextMonth} className="w-8 h-8 rounded-lg hover:bg-secondary flex items-center justify-center">
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Calendar Grid */}
+      <div className="rounded-xl bg-card border border-border overflow-hidden">
+        {/* Weekday headers */}
+        <div className="grid grid-cols-7 border-b border-border">
+          {WEEKDAYS.map((day) => (
+            <div key={day} className="p-2 text-center">
+              <span className="text-[10px] font-semibold text-muted-foreground uppercase">{day}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Days */}
+        <div className="grid grid-cols-7">
+          {Array.from({ length: startingDayIndex }).map((_, i) => (
+            <div key={`empty-${i}`} className="aspect-square border-b border-r border-border bg-secondary/20" />
+          ))}
+          {daysInMonth.map((date) => {
+            const planData = getPlanForDate(date);
+            const isSelected = selectedDate && isSameDay(date, selectedDate);
+            const isCurrentDay = isToday(date);
+            const hasPlan = !!planData;
+            const allCompleted = planData?.dailyGoal?.completed;
+
+            return (
+              <button
+                key={date.toISOString()}
+                onClick={() => setSelectedDate(isSelected ? null : date)}
+                className={`aspect-square border-b border-r border-border p-1 flex flex-col items-center justify-center relative transition-colors hover:bg-secondary/50 ${
+                  isSelected ? "bg-primary/10 ring-1 ring-primary" : ""
+                } ${isCurrentDay ? "bg-primary/5" : ""}`}
+              >
+                <span className={`text-xs font-medium ${isCurrentDay ? "text-primary font-bold" : ""}`}>
+                  {format(date, "d")}
+                </span>
+                {hasPlan && (
+                  <div className="flex gap-0.5 mt-0.5">
+                    {planData.week.daily_goals?.map((dg, di) => {
+                      if (di < 5) {
+                        return (
+                          <div
+                            key={di}
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              dg.completed ? "bg-primary" : "bg-muted-foreground/30"
+                            }`}
+                          />
+                        );
+                      }
+                      return null;
+                    })}
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Selected day detail */}
+      {selectedDate && (
+        <motion.div
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl bg-card border border-primary/20 p-4 space-y-3"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CalendarIcon className="w-4 h-4 text-primary" />
+              <h4 className="font-semibold text-sm">{format(selectedDate, "EEEE, MMMM d")}</h4>
+            </div>
+            {isToday(selectedDate) && (
+              <span className="text-[10px] bg-primary/15 text-primary px-2 py-0.5 rounded-full font-medium">Today</span>
+            )}
           </div>
-          <Button variant="outline" size="sm" onClick={generateSchedule}>
-            <RefreshCw className="w-3.5 h-3.5" />
-          </Button>
-        </div>
-        <p className="text-sm text-muted-foreground mt-2">{schedule.overview}</p>
-        <div className="flex items-center gap-4 mt-2">
-          <span className="text-xs text-primary font-medium">
-            ~{schedule.total_training_hours || (weeklyDays * 1.5)} training hours
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {schedule.days?.filter(d => d.type === "rest").length || (7 - weeklyDays)} rest days
-          </span>
-        </div>
-      </div>
 
-      {/* Day-by-day schedule */}
-      <div className="space-y-2">
-        {schedule.days?.map((day, i) => (
-          <ScheduleDay key={i} day={day.day} schedule={day} index={i} />
-        ))}
-      </div>
+          {selectedDayPlan ? (
+            <>
+              <div className="rounded-lg bg-primary/5 border border-primary/10 p-3">
+                <p className="text-xs font-medium text-primary">Week {selectedDayPlan.week.week_number}: {selectedDayPlan.week.focus}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{selectedDayPlan.week.weekly_objective}</p>
+              </div>
 
-      <Button variant="outline" className="w-full" onClick={() => setSchedule(null)}>
-        Change Schedule Settings
-      </Button>
+              <div className="space-y-2">
+                {/* Show all daily goals for this week */}
+                {selectedDayPlan.week.daily_goals?.map((dg, di) => {
+                  const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+                  const isThisDay = di === selectedDayPlan.dayIdx;
+                  return (
+                    <div
+                      key={di}
+                      onClick={() => toggleDayComplete.mutate({ weekIdx: selectedDayPlan.weekIdx, dayIdx: di })}
+                      className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                        dg.completed
+                          ? "bg-primary/10 border-primary/20"
+                          : isThisDay
+                          ? "bg-secondary/50 border-primary/30"
+                          : "bg-secondary/30 border-border hover:border-primary/30"
+                      }`}
+                    >
+                      <div
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                          dg.completed ? "bg-primary border-primary" : "border-muted-foreground/30"
+                        }`}
+                      >
+                        {dg.completed && <CheckCircle2 className="w-3 h-3 text-white" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className={`text-xs font-semibold ${isThisDay ? "text-primary" : ""}`}>
+                            {dayNames[di]}
+                          </span>
+                          <span
+                            className={`text-[10px] px-1.5 py-0.5 rounded-md border ${CATEGORY_COLORS[dg.category] || "bg-secondary border-border text-muted-foreground"}`}
+                          >
+                            {dg.category}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                            <Clock className="w-3 h-3" /> {dg.duration}
+                          </span>
+                        </div>
+                        <p className="text-sm font-medium mt-0.5">{dg.drill_name}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{dg.goal}</p>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setTutorialItem(dg); }}
+                          className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5 mt-1"
+                        >
+                          <BookOpen className="w-3 h-3" /> How To
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {selectedDayPlan.week.xp_target && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Sparkles className="w-3 h-3 text-accent" />
+                  Week XP Target: {selectedDayPlan.week.xp_target}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-sm text-muted-foreground">No plan for this day.</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {!activePlan ? "Generate a Development Plan from the IDP tab first." : "This date falls outside your plan's range."}
+              </p>
+            </div>
+          )}
+        </motion.div>
+      )}
+
+      {/* Legend & Progress */}
+      {activePlan?.weekly_goals && (
+        <div className="rounded-xl bg-card border border-border p-4">
+          <h4 className="font-heading font-bold text-xs tracking-wider uppercase text-muted-foreground mb-3">
+            Plan Progress
+          </h4>
+          <div className="space-y-2">
+            {activePlan.weekly_goals.slice(0, 6).map((week, wi) => {
+              const completed = week.daily_goals?.filter((d) => d.completed).length || 0;
+              const total = week.daily_goals?.length || 5;
+              return (
+                <div key={wi} className="flex items-center gap-3">
+                  <span className="text-xs font-medium w-16 flex-shrink-0">Week {week.week_number}</span>
+                  <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary rounded-full transition-all"
+                      style={{ width: `${(completed / total) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-[10px] text-muted-foreground w-8 text-right">{completed}/{total}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
