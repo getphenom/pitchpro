@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import XpBar from "@/components/shared/XpBar";
 import StatRadar from "@/components/shared/StatRadar";
 import TrophyCase from "@/components/profile/TrophyCase";
-import { POSITION_LABELS, BADGES, getLevel, LEVEL_TITLES, STAT_COLORS } from "@/lib/gameData";
+import { POSITION_LABELS, getLevel, LEVEL_TITLES, STAT_COLORS } from "@/lib/gameData";
 import { motion } from "framer-motion";
 
 export default function Profile() {
@@ -141,32 +141,8 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Badges */}
-        {profile.badges?.length > 0 && (
-          <div className="space-y-3">
-            <h3 className="font-heading font-bold text-sm tracking-wider uppercase text-muted-foreground">
-              Badges Earned
-            </h3>
-            <div className="grid grid-cols-2 gap-2">
-              {profile.badges.map((badgeId) => {
-                const badge = BADGES[badgeId];
-                if (!badge) return null;
-                return (
-                  <div
-                    key={badgeId}
-                    className="flex items-center gap-3 bg-card border border-border rounded-xl p-3"
-                  >
-                    <span className="text-2xl">{badge.icon}</span>
-                    <div>
-                      <p className="text-sm font-semibold">{badge.name}</p>
-                      <p className="text-[10px] text-muted-foreground">{badge.desc}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        {/* Trophy Case — All Badges */}
+        <TrophyCase profile={profile} />
 
         {/* Edit Profile */}
         {editing ? (
