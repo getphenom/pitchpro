@@ -85,19 +85,22 @@ export default function Home() {
 
   const handleQuestComplete = async (quest) => {
     const currentCompleted = dailyLog?.quests_completed || [];
-    if (currentCompleted.includes(quest.id)) return;
+    const isCompleted = currentCompleted.includes(quest.id);
 
-    const newCompleted = [...currentCompleted, quest.id];
-    const newXp = (dailyLog?.xp_earned_today || 0) + quest.xp;
+    const newCompleted = isCompleted
+      ? currentCompleted.filter((id) => id !== quest.id)
+      : [...currentCompleted, quest.id];
+    const xpDelta = isCompleted ? -quest.xp : quest.xp;
+    const newXp = (dailyLog?.xp_earned_today || 0) + xpDelta;
 
     await updateLog.mutateAsync({
       quests_completed: newCompleted,
-      xp_earned_today: newXp,
+      xp_earned_today: Math.max(0, newXp),
     });
 
     await updateProfile.mutateAsync({
-      xp: (profile.xp || 0) + quest.xp,
-      level: getLevel((profile.xp || 0) + quest.xp),
+      xp: Math.max(0, (profile.xp || 0) + xpDelta),
+      level: getLevel(Math.max(0, (profile.xp || 0) + xpDelta)),
       last_active_date: today,
     });
   };

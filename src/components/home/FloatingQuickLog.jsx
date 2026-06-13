@@ -28,6 +28,11 @@ export default function FloatingQuickLog({ dailyLog, profile, onWaterUpdate, onM
     onWaterUpdate(newMl);
   };
 
+  const removeWater = () => {
+    const newMl = Math.max(0, currentMl - 250);
+    onWaterUpdate(newMl);
+  };
+
   const toggleMeal = (type) => {
     const existing = meals.find((m) => m.type === type);
     const rest = meals.filter((m) => m.type !== type);
@@ -67,6 +72,13 @@ export default function FloatingQuickLog({ dailyLog, profile, onWaterUpdate, onM
                       style={{ width: `${waterPct}%` }}
                     />
                   </div>
+                  <button
+                    onClick={removeWater}
+                    disabled={currentMl <= 0}
+                    className="w-9 h-9 rounded-lg bg-secondary hover:bg-blue-500/20 flex items-center justify-center transition-colors active:scale-95 disabled:opacity-30 disabled:pointer-events-none"
+                  >
+                    <span className="text-sm font-bold text-muted-foreground">−</span>
+                  </button>
                   <button
                     onClick={addWater}
                     className="w-9 h-9 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 flex items-center justify-center transition-colors active:scale-95"

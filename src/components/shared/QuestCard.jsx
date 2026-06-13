@@ -15,12 +15,12 @@ export default function QuestCard({ quest, onComplete, disabled = false }) {
 
   return (
     <motion.div
-      whileHover={!completed ? { scale: 1.02 } : {}}
-      whileTap={!completed ? { scale: 0.98 } : {}}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
       className={`relative rounded-xl border bg-gradient-to-br p-4 transition-all cursor-pointer
         ${completed ? "opacity-60 border-primary/30 from-primary/10 to-primary/5" : categoryColors[category] || categoryColors.training}
         ${disabled ? "opacity-40 pointer-events-none" : ""}`}
-      onClick={() => !completed && !disabled && onComplete?.()}
+      onClick={() => !disabled && onComplete?.()}
     >
       <div className="flex items-start gap-3">
         <div className={`text-2xl ${completed ? "grayscale" : ""}`}>
