@@ -1,0 +1,130 @@
+{
+  "name": "PlayerProfile",
+  "type": "object",
+  "properties": {
+    "player_name": {
+      "type": "string",
+      "description": "Player's name"
+    },
+    "age": {
+      "type": "number",
+      "description": "Player's age"
+    },
+    "position": {
+      "type": "string",
+      "enum": [
+        "goalkeeper",
+        "center_back",
+        "full_back",
+        "defensive_mid",
+        "central_mid",
+        "attacking_mid",
+        "winger",
+        "striker"
+      ],
+      "description": "Primary playing position"
+    },
+    "skill_level": {
+      "type": "string",
+      "enum": [
+        "beginner",
+        "intermediate",
+        "advanced",
+        "elite"
+      ],
+      "description": "Current skill level"
+    },
+    "xp": {
+      "type": "number",
+      "default": 0,
+      "description": "Experience points"
+    },
+    "level": {
+      "type": "number",
+      "default": 1,
+      "description": "Current level"
+    },
+    "streak_days": {
+      "type": "number",
+      "default": 0,
+      "description": "Current daily streak"
+    },
+    "last_active_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Last date player was active"
+    },
+    "stats": {
+      "type": "object",
+      "description": "Player attribute ratings 1-100",
+      "properties": {
+        "pace": {
+          "type": "number",
+          "default": 50
+        },
+        "shooting": {
+          "type": "number",
+          "default": 50
+        },
+        "passing": {
+          "type": "number",
+          "default": 50
+        },
+        "dribbling": {
+          "type": "number",
+          "default": 50
+        },
+        "defending": {
+          "type": "number",
+          "default": 50
+        },
+        "physical": {
+          "type": "number",
+          "default": 50
+        },
+        "mental": {
+          "type": "number",
+          "default": 50
+        },
+        "tactical": {
+          "type": "number",
+          "default": 50
+        }
+      }
+    },
+    "badges": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Earned badge IDs"
+    },
+    "weight_kg": {
+      "type": "number",
+      "description": "Weight in kg"
+    },
+    "height_cm": {
+      "type": "number",
+      "description": "Height in cm"
+    },
+    "preferred_foot": {
+      "type": "string",
+      "enum": [
+        "left",
+        "right",
+        "both"
+      ]
+    },
+    "weekly_training_days": {
+      "type": "number",
+      "default": 5,
+      "description": "How many days per week they train"
+    }
+  },
+  "required": [
+    "player_name",
+    "age",
+    "position",
+    "skill_level"
+  ]
+}

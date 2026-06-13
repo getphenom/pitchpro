@@ -1,0 +1,100 @@
+{
+  "name": "DailyLog",
+  "type": "object",
+  "properties": {
+    "player_id": {
+      "type": "string",
+      "description": "Reference to player profile"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "water_ml": {
+      "type": "number",
+      "default": 0,
+      "description": "Water intake in ml"
+    },
+    "meals_logged": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "breakfast",
+              "lunch",
+              "dinner",
+              "snack"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "completed": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      }
+    },
+    "training_completed": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string"
+          },
+          "drill_name": {
+            "type": "string"
+          },
+          "completed": {
+            "type": "boolean",
+            "default": false
+          },
+          "xp_earned": {
+            "type": "number",
+            "default": 0
+          }
+        }
+      }
+    },
+    "quests_completed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of completed quests"
+    },
+    "mental_session_done": {
+      "type": "boolean",
+      "default": false
+    },
+    "sleep_hours": {
+      "type": "number"
+    },
+    "mood": {
+      "type": "string",
+      "enum": [
+        "great",
+        "good",
+        "okay",
+        "tired",
+        "low"
+      ]
+    },
+    "xp_earned_today": {
+      "type": "number",
+      "default": 0
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "player_id",
+    "date"
+  ]
+}
