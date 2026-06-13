@@ -8,6 +8,7 @@ import WaterTracker from "@/components/shared/WaterTracker";
 import DailyQuests from "@/components/home/DailyQuests";
 import StreakBanner from "@/components/home/StreakBanner";
 import WeeklyProgress from "@/components/shared/WeeklyProgress";
+import PerformanceFeedback from "@/components/home/PerformanceFeedback";
 import { POSITION_LABELS, BADGES, getLevel, LEVEL_TITLES } from "@/lib/gameData";
 import { Loader2, Trophy, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
@@ -190,6 +191,9 @@ export default function Home() {
             onQuestComplete={handleQuestComplete}
           />
         </motion.div>
+
+        {/* AI Performance Feedback */}
+        <PerformanceFeedback profile={profile} snapshots={snapshots} dailyLog={dailyLog} />
 
         {/* Weekly Stats Progress */}
         <motion.div
