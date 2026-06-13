@@ -13,6 +13,7 @@ import DailyReminder from "@/components/home/DailyReminder";
 import FloatingQuickLog from "@/components/home/FloatingQuickLog";
 import ReadinessScore from "@/components/home/ReadinessScore";
 import WeeklySummary from "@/components/home/WeeklySummary";
+import DashboardCharts from "@/components/home/DashboardCharts";
 import { POSITION_LABELS, BADGES, getLevel, LEVEL_TITLES } from "@/lib/gameData";
 import { Loader2, Trophy, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
@@ -229,6 +230,9 @@ export default function Home() {
             snapshots={snapshots}
           />
         </motion.div>
+
+        {/* Dashboard Charts */}
+        <DashboardCharts profile={profile} />
 
         {/* Weekly Summary */}
         <WeeklySummary profile={profile} />

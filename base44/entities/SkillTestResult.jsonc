@@ -1,0 +1,33 @@
+{
+  "name": "SkillTestResult",
+  "type": "object",
+  "properties": {
+    "player_id": {
+      "type": "string",
+      "description": "Reference to player profile"
+    },
+    "test_id": {
+      "type": "string",
+      "description": "ID of the skill test (e.g. sprint_40yd, juggling)"
+    },
+    "value": {
+      "type": "number",
+      "description": "Raw test result value"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the test was performed"
+    },
+    "stat_score": {
+      "type": "number",
+      "description": "Calculated 1-100 stat contribution from this result"
+    }
+  },
+  "required": [
+    "player_id",
+    "test_id",
+    "value",
+    "date"
+  ]
+}
