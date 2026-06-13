@@ -5,6 +5,7 @@ import { Loader2, Map, Sparkles, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { POSITION_LABELS } from "@/lib/gameData";
 import { motion } from "framer-motion";
+import TacticalCoachChat from "@/components/agents/TacticalCoachChat";
 
 const FORMATIONS = [
   { name: "4-3-3", style: "Attacking", desc: "Balanced formation with 3 forwards. Great for wing play." },
@@ -306,6 +307,15 @@ Make it practical and age-appropriate.`,
             </div>
           )}
         </div>
+
+        {/* Tactical Coach Agent */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl bg-card border border-orange-500/20 p-5"
+        >
+          <TacticalCoachChat profile={profile} />
+        </motion.div>
       </div>
     </div>
   );
