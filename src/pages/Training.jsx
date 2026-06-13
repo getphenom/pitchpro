@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Dumbbell, Clock, Flame, Calendar, ChevronRight, Zap, Target, Shield, Footprints, Save, Timer, BookOpen } from "lucide-react";
+import { Loader2, Dumbbell, Clock, Flame, Calendar, ChevronRight, Zap, Target, Shield, Footprints, Save, Timer, BookOpen, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { POSITION_LABELS } from "@/lib/gameData";
@@ -13,6 +13,7 @@ import WarmUpGenerator from "@/components/training/WarmUpGenerator";
 import TrainingSchedule from "@/components/training/TrainingSchedule";
 import TutorialModal from "@/components/shared/TutorialModal";
 import FitnessTrainerChat from "@/components/agents/FitnessTrainerChat";
+import PlayerAssessment from "@/components/training/PlayerAssessment";
 
 const TRAINING_CATEGORIES = {
   technical: {
@@ -227,6 +228,17 @@ export default function Training() {
                 <Clock className="w-3.5 h-3.5 inline mr-1" />
                 Schedule
               </button>
+              <button
+                onClick={() => { setViewMode("tests"); setShowPlan(false); }}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  viewMode === "tests"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <ClipboardList className="w-3.5 h-3.5 inline mr-1" />
+                Tests
+              </button>
             </div>
             {viewMode === "drills" && (
               <Button
@@ -257,6 +269,8 @@ export default function Training() {
           <WarmUpGenerator profile={profile} />
         ) : viewMode === "schedule" ? (
           <TrainingSchedule profile={profile} />
+        ) : viewMode === "tests" ? (
+          <PlayerAssessment profile={profile} />
         ) : showPlan ? (
           <TrainingPlanGenerator profile={profile} />
         ) : (

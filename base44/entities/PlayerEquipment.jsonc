@@ -1,0 +1,55 @@
+{
+  "name": "PlayerEquipment",
+  "type": "object",
+  "properties": {
+    "player_id": {
+      "type": "string",
+      "description": "Reference to player profile"
+    },
+    "items": {
+      "type": "array",
+      "description": "Equipment items the player owns or needs",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "footwear",
+              "training_gear",
+              "protection",
+              "recovery",
+              "technology",
+              "nutrition",
+              "other"
+            ]
+          },
+          "owned": {
+            "type": "boolean",
+            "default": false
+          },
+          "condition": {
+            "type": "string",
+            "enum": [
+              "new",
+              "good",
+              "worn",
+              "needs_replacement",
+              "not_applicable"
+            ],
+            "default": "not_applicable"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "player_id"
+  ]
+}
