@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Loader2, Sparkles, Clock, Move, Timer, BookOpen } from "lucide-react";
 import TutorialModal from "@/components/shared/TutorialModal";
+import DrillEquipmentInfo from "@/components/training/DrillEquipmentInfo";
 import { POSITION_LABELS } from "@/lib/gameData";
 import { motion } from "framer-motion";
 
@@ -345,12 +346,15 @@ Return a structured warm-up with timed segments.`;
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">{ex.description}</p>
-                  <button
-                    onClick={() => setTutorialItem(ex)}
-                    className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5 mt-1"
-                  >
-                    <BookOpen className="w-3 h-3" /> How To
-                  </button>
+                  <div className="flex items-center gap-3 mt-1">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setTutorialItem(ex); }}
+                      className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5"
+                    >
+                      <BookOpen className="w-3 h-3" /> How To
+                    </button>
+                    <DrillEquipmentInfo drillName={ex.name} profileId={profile?.id} />
+                  </div>
                 </div>
               </div>
             ))}

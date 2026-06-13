@@ -13,6 +13,8 @@ import TrainingTemplates from "@/components/training/TrainingTemplates";
 import WarmUpGenerator from "@/components/training/WarmUpGenerator";
 import TrainingSchedule from "@/components/training/TrainingSchedule";
 import TutorialModal from "@/components/shared/TutorialModal";
+import DrillEquipmentInfo from "@/components/training/DrillEquipmentInfo";
+import EquipmentSummary from "@/components/training/EquipmentSummary";
 import FitnessTrainerChat from "@/components/agents/FitnessTrainerChat";
 import PlayerAssessment from "@/components/training/PlayerAssessment";
 
@@ -96,35 +98,38 @@ const TRAINING_CATEGORIES = {
   },
 };
 
-function DrillCard({ drill, index, onTutorial }) {
+function DrillCard({ drill, index, onTutorial, profile }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
       onClick={() => onTutorial?.(drill)}
-      className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border hover:border-primary/30 transition-all cursor-pointer group"
+      className="p-4 rounded-xl bg-card border border-border hover:border-primary/30 transition-all cursor-pointer group"
     >
-      <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
-        <Zap className="w-5 h-5 text-primary" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <h4 className="font-semibold text-sm">{drill.name}</h4>
-        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{drill.desc}</p>
-        <span className="text-[10px] text-muted-foreground mt-1 group-hover:text-primary transition-colors inline-flex items-center gap-0.5">
-          <BookOpen className="w-3 h-3" /> Tap for tutorial
-        </span>
-      </div>
-      <div className="flex flex-col items-end gap-1 flex-shrink-0">
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <Clock className="w-3 h-3" />
-          {drill.duration}
+      <div className="flex items-start gap-4 mb-2">
+        <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <Zap className="w-5 h-5 text-primary" />
         </div>
-        <div className="flex items-center gap-1 text-xs text-accent font-semibold">
-          <Flame className="w-3 h-3" />
-          {drill.xp} XP
+        <div className="flex-1 min-w-0">
+          <h4 className="font-semibold text-sm">{drill.name}</h4>
+          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{drill.desc}</p>
+          <span className="text-[10px] text-muted-foreground mt-1 group-hover:text-primary transition-colors inline-flex items-center gap-0.5">
+            <BookOpen className="w-3 h-3" /> Tap for tutorial
+          </span>
+        </div>
+        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Clock className="w-3 h-3" />
+            {drill.duration}
+          </div>
+          <div className="flex items-center gap-1 text-xs text-accent font-semibold">
+            <Flame className="w-3 h-3" />
+            {drill.xp} XP
+          </div>
         </div>
       </div>
+      <DrillEquipmentInfo drillName={drill.name} profileId={profile?.id} />
     </motion.div>
   );
 }
@@ -297,6 +302,7 @@ export default function Training() {
           <TrainingPlanGenerator profile={profile} />
         ) : (
           <>
+            <EquipmentSummary profileId={profile?.id} />
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="w-full bg-secondary">
                 {Object.entries(TRAINING_CATEGORIES).map(([key, cat]) => (
@@ -316,7 +322,7 @@ export default function Training() {
                   </div>
                   <div className="space-y-2">
                     {(cat.drills[level] || []).map((drill, i) => (
-                      <DrillCard key={i} drill={drill} index={i} onTutorial={setTutorialItem} />
+                      <DrillCard key={i} drill={drill} index={i} onTutorial={setTutorialItem} profile={profile} />
                     ))}
                   </div>
                 </TabsContent>

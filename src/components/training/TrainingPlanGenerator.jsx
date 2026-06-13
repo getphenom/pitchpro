@@ -2,8 +2,9 @@ import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Loader2, Sparkles, Clock, Flame, Bookmark, Check } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { POSITION_LABELS } from "@/lib/gameData";
+import { getOwnedItems, buildEquipmentContext } from "@/lib/equipmentData";
 import { motion } from "framer-motion";
 
 export default function TrainingPlanGenerator({ profile }) {
@@ -11,6 +12,12 @@ export default function TrainingPlanGenerator({ profile }) {
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const queryClient = useQueryClient();
+
+  const { data: equipList = [] } = useQuery({
+    queryKey: ["player-equipment", profile?.id],
+    queryFn: () => base44.entities.PlayerEquipment.filter({ player_id: profile.id }),
+    enabled: !!profile,
+  });
 
   const saveAsTemplate = useMutation({
     mutationFn: (data) => base44.entities.TrainingTemplate.create(data),
@@ -23,8 +30,20 @@ export default function TrainingPlanGenerator({ profile }) {
 
   const generatePlan = async () => {
     setLoading(true);
+    const equipment = equipList[0];
+    const ownedItems = getOwnedItems(equipment);
+    const equipmentContext = buildEquipmentContext(ownedItems);
+
     const prompt = `Create a personalized weekly soccer training plan for a ${profile.age}-year-old ${POSITION_LABELS[profile.position]} at ${profile.skill_level} level. 
 They train ${profile.weekly_training_days || 5} days per week. Preferred foot: ${profile.preferred_foot || "right"}.
+
+${equipmentContext}
+
+IMPORTANT — Equipment awareness:
+- Design drills that work with the equipment they actually own
+- If they're missing key equipment (cones, ladder, etc.), suggest drills that use bodyweight or common household items instead
+- For any drill that normally requires special gear, mention a "No Equipment Alternative" in the description
+- Prioritize drills they can actually do with what they have
 
 Create a detailed plan with specific drills for each day. Include:
 - Technical drills specific to their position

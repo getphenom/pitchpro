@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isToday, isSameMonth } from "date-fns";
 import TutorialModal from "@/components/shared/TutorialModal";
+import DrillEquipmentInfo from "@/components/training/DrillEquipmentInfo";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const CATEGORY_COLORS = {
@@ -222,12 +223,15 @@ export default function TrainingSchedule({ profile }) {
                         </div>
                         <p className="text-sm font-medium mt-0.5">{dg.drill_name}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">{dg.goal}</p>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setTutorialItem(dg); }}
-                          className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5 mt-1"
-                        >
-                          <BookOpen className="w-3 h-3" /> How To
-                        </button>
+                        <div className="flex items-center gap-3 mt-1">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setTutorialItem(dg); }}
+                            className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5"
+                          >
+                            <BookOpen className="w-3 h-3" /> How To
+                          </button>
+                          <DrillEquipmentInfo drillName={dg.drill_name} profileId={profile?.id} />
+                        </div>
                       </div>
                     </div>
                   );
