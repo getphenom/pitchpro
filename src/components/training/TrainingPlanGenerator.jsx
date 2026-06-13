@@ -1,13 +1,25 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Loader2, Sparkles, Clock, Flame } from "lucide-react";
+import { Loader2, Sparkles, Clock, Flame, Bookmark, Check } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { POSITION_LABELS } from "@/lib/gameData";
 import { motion } from "framer-motion";
 
 export default function TrainingPlanGenerator({ profile }) {
   const [plan, setPlan] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const queryClient = useQueryClient();
+
+  const saveAsTemplate = useMutation({
+    mutationFn: (data) => base44.entities.TrainingTemplate.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["training-templates"] });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    },
+  });
 
   const generatePlan = async () => {
     setLoading(true);
@@ -151,9 +163,32 @@ For each training day, provide 3-4 drills with name, duration, description, and 
         </div>
       )}
 
-      <Button variant="outline" className="w-full" onClick={() => setPlan(null)}>
-        Generate New Plan
-      </Button>
+      <div className="flex gap-2">
+        <Button
+          variant="outline"
+          className="flex-1"
+          onClick={() => {
+            const allDrills = [];
+            plan.days?.forEach((day) => {
+              if (!day.is_rest) {
+                day.drills?.forEach((d) => allDrills.push({ ...d, xp: 20 }));
+              }
+            });
+            saveAsTemplate.mutate({
+              player_id: profile.id,
+              name: plan.plan_name || "AI Training Plan",
+              drills: allDrills,
+            });
+          }}
+          disabled={saved}
+        >
+          {saved ? <Check className="w-4 h-4 mr-1 text-green-400" /> : <Bookmark className="w-4 h-4 mr-1" />}
+          {saved ? "Saved!" : "Save as Template"}
+        </Button>
+        <Button variant="outline" className="flex-1" onClick={() => { setPlan(null); setSaved(false); }}>
+          Generate New Plan
+        </Button>
+      </div>
     </div>
   );
 }

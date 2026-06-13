@@ -1,0 +1,47 @@
+{
+  "name": "TrainingTemplate",
+  "type": "object",
+  "properties": {
+    "player_id": {
+      "type": "string",
+      "description": "Reference to player profile"
+    },
+    "name": {
+      "type": "string",
+      "description": "Template name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of the workout"
+    },
+    "drills": {
+      "type": "array",
+      "description": "Saved drills in this template",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "xp": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "player_id",
+    "name",
+    "drills"
+  ]
+}
