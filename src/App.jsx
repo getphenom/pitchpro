@@ -18,6 +18,7 @@ import Training from "@/pages/Training";
 import Nutrition from "@/pages/Nutrition";
 import Mental from "@/pages/Mental";
 import Tactics from "@/pages/Tactics";
+import Tasks from "@/pages/Tasks";
 import Profile from "@/pages/Profile";
 import Injury from "@/pages/Injury";
 import Development from "@/pages/Development";
@@ -65,6 +66,7 @@ const AuthenticatedApp = () => {
           <Route path="/nutrition" element={<Nutrition />} />
           <Route path="/mental" element={<Mental />} />
           <Route path="/tactics" element={<Tactics />} />
+          <Route path="/tasks" element={<Tasks />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/injury" element={<Injury />} />
           <Route path="/development" element={<Development />} />

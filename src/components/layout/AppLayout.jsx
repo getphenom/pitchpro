@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
-import { Home, Dumbbell, UtensilsCrossed, Brain, Map, User, Trophy, Heart, Target, Timer, BarChart3, Calendar, TrendingUp, ArrowLeft } from "lucide-react";
+import { Home, Dumbbell, UtensilsCrossed, Brain, Map, User, Trophy, Heart, Target, Timer, BarChart3, Calendar, TrendingUp, ArrowLeft, ListChecks } from "lucide-react";
 import PostWorkoutNutritionReminder from "@/components/home/PostWorkoutNutritionReminder";
 import QuickLogWidget from "@/components/shared/QuickLogWidget";
 
@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { path: "/monthly", icon: BarChart3, label: "Monthly" },
   { path: "/profile", icon: User, label: "Profile" },
   { path: "/insights", icon: TrendingUp, label: "Insights" },
+  { path: "/tasks", icon: ListChecks, label: "Tasks" },
   { path: "/injury", icon: Heart, label: "Health" },
 ];
 

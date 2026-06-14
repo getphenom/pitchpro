@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { X, Star, CheckCircle2, Undo2, Dumbbell, Droplets, UtensilsCrossed, Brain, Map, Timer, Info, Lightbulb, Circle, ChevronDown, ChevronUp, Edit3 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { X, Star, CheckCircle2, Undo2, Dumbbell, Droplets, UtensilsCrossed, Brain, Map, Timer, Info, Lightbulb, Circle, ChevronDown, ChevronUp, Edit3, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "framer-motion";
@@ -268,14 +269,23 @@ const QUEST_GUIDES = {
   },
 };
 
+const LINK_ROUTES = {
+  training_drill: "/training",
+  tactical_drill: "/tactics",
+  nutrition_meal: "/nutrition",
+  mental_exercise: "/mental",
+  recovery_routine: "/recovery",
+};
+
 export default function ItemDetailDialog({ open, onClose, item, onAction }) {
+  const navigate = useNavigate();
   const [completedSteps, setCompletedSteps] = useState({});
   const [showTips, setShowTips] = useState(false);
   const [sessionNotes, setSessionNotes] = useState("");
 
   if (!open || !item) return null;
 
-  const { title, description, xp, icon, category, completed } = item;
+  const { title, description, xp, icon, category, completed, linkType, linkValue, suggestedOptions } = item;
   const meta = CATEGORY_META[category];
   const guide = QUEST_GUIDES[title];
 
@@ -330,6 +340,57 @@ export default function ItemDetailDialog({ open, onClose, item, onAction }) {
           <div className="flex-1 overflow-y-auto p-5 space-y-4">
             {/* Description */}
             <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
+
+            {/* Link to concrete drill/resource */}
+            {linkType && linkValue && !completed && (
+              <button
+                onClick={() => {
+                  const route = LINK_ROUTES[linkType];
+                  if (route) { onClose(); navigate(route); }
+                }}
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-all"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">🔗</span>
+                  <span className="text-xs text-primary font-medium">Go to: {linkValue}</span>
+                </div>
+                <ArrowRight className="w-4 h-4 text-primary" />
+              </button>
+            )}
+
+            {/* Suggested options (multiple concrete picks) */}
+            {suggestedOptions && suggestedOptions.length > 0 && !completed && (
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm">🎯</span>
+                  <h4 className="text-xs font-heading font-bold uppercase tracking-wider text-muted-foreground">Pick an option</h4>
+                </div>
+                <div className="space-y-1.5">
+                  {suggestedOptions.map((opt, i) => (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        const route = LINK_ROUTES[linkType];
+                        if (route) { onClose(); navigate(route); }
+                      }}
+                      className="w-full flex items-center gap-3 p-3 rounded-lg bg-secondary/40 border border-transparent hover:border-primary/30 text-left transition-all"
+                    >
+                      <span className="text-lg">{opt.icon || "⚽"}</span>
+                      <div className="flex-1 min-w-0">
+                        <span className="text-xs font-medium">{opt.name}</span>
+                        <span className="text-[10px] text-muted-foreground ml-2">{opt.duration}</span>
+                      </div>
+                      {opt.xp > 0 && (
+                        <span className="text-[11px] text-accent font-semibold flex items-center gap-0.5">
+                          <Star className="w-2.5 h-2.5 fill-accent/30" />{opt.xp}
+                        </span>
+                      )}
+                      <ArrowRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* XP Badge */}
             <div className="flex items-center gap-3 rounded-xl bg-accent/10 border border-accent/20 p-3">

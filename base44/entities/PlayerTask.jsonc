@@ -1,0 +1,121 @@
+{
+  "name": "PlayerTask",
+  "type": "object",
+  "properties": {
+    "player_id": {
+      "type": "string",
+      "description": "Reference to player profile"
+    },
+    "title": {
+      "type": "string",
+      "description": "Task title"
+    },
+    "description": {
+      "type": "string",
+      "description": "What the user should do"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "training",
+        "nutrition",
+        "mental",
+        "tactical",
+        "recovery",
+        "hydration",
+        "general"
+      ],
+      "description": "Task category"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "daily_quest",
+        "coach",
+        "assessment",
+        "plan",
+        "manual"
+      ],
+      "description": "Where this task came from"
+    },
+    "source_ref": {
+      "type": "string",
+      "description": "Reference to the source (drill name, quest id, conversation id)"
+    },
+    "link_type": {
+      "type": "string",
+      "enum": [
+        "training_drill",
+        "tactical_drill",
+        "nutrition_meal",
+        "mental_exercise",
+        "recovery_routine",
+        "hydration",
+        "general"
+      ],
+      "description": "What type of resource this task links to"
+    },
+    "link_value": {
+      "type": "string",
+      "description": "The drill name, meal name, etc. to link to"
+    },
+    "suggested_options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "string"
+          },
+          "xp": {
+            "type": "number"
+          },
+          "icon": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Concrete options the user can choose from"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Emoji icon"
+    },
+    "xp": {
+      "type": "number",
+      "default": 0,
+      "description": "XP awarded on completion"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed",
+        "dismissed"
+      ],
+      "default": "active"
+    },
+    "completed_date": {
+      "type": "string",
+      "format": "date",
+      "description": "When the task was completed"
+    },
+    "notes": {
+      "type": "string",
+      "description": "User notes about the task"
+    },
+    "created_date_ts": {
+      "type": "string",
+      "format": "date",
+      "description": "Date task was created"
+    }
+  },
+  "required": [
+    "player_id",
+    "title",
+    "category"
+  ]
+}
