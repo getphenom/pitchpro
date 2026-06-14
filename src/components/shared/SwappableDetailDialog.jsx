@@ -19,11 +19,11 @@ export default function SwappableDetailDialog({
     (f) => (typeof f === "string" ? f === item.name || f === item.title : f.name === item.name || f.name === item.title)
   );
   const catColors = {
-    training: "border-green-500/30 bg-green-500/5",
-    nutrition: "border-amber-500/30 bg-amber-500/5",
-    mental: "border-cyan-500/30 bg-cyan-500/5",
-    recovery: "border-teal-500/30 bg-teal-500/5",
-    tactical: "border-orange-500/30 bg-orange-500/5",
+    training: "border-green-500/30",
+    nutrition: "border-amber-500/30",
+    mental: "border-cyan-500/30",
+    recovery: "border-teal-500/30",
+    tactical: "border-orange-500/30",
   };
 
   const displayAlternatives = trainingMode === "all" ? alternatives : (aiAlternatives || []);
