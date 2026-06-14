@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { X, Star, RefreshCw, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import { X, Star, RefreshCw, Loader2, ChevronDown, ChevronUp, User, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function SwappableDetailDialog({
@@ -8,6 +9,9 @@ export default function SwappableDetailDialog({
   extraButtons,
 }) {
   const [showAlts, setShowAlts] = useState(false);
+  const [trainingMode, setTrainingMode] = useState("all");
+  const [aiAlternatives, setAiAlternatives] = useState(null);
+  const [loadingAlts, setLoadingAlts] = useState(false);
 
   if (!open || !item) return null;
 
@@ -20,6 +24,51 @@ export default function SwappableDetailDialog({
     mental: "border-cyan-500/30 bg-cyan-500/5",
     recovery: "border-teal-500/30 bg-teal-500/5",
     tactical: "border-orange-500/30 bg-orange-500/5",
+  };
+
+  const displayAlternatives = trainingMode === "all" ? alternatives : (aiAlternatives || []);
+
+  const handleModeChange = async (mode) => {
+    setTrainingMode(mode);
+    if (mode === "all") {
+      setAiAlternatives(null);
+      return;
+    }
+    setLoadingAlts(true);
+    const itemName = item.name || item.title || "";
+    const itemDesc = item.description || item.desc || item.note || "";
+
+    const result = await base44.integrations.Core.InvokeLLM({
+      prompt: `Find 3 alternative ${category} options for a ${mode === "solo" ? "solo (training alone)" : "partner/team (training with someone else)"} setting, replacing: "${itemName}".
+
+Original: ${itemDesc}
+${item.duration ? `Duration: ${item.duration}` : ""}
+${item.xp ? `XP: ${item.xp}` : ""}
+Player position: ${profile?.position || "unknown"}
+Age: ${profile?.age || "teen"}
+Skill: ${profile?.skill_level || "intermediate"}
+
+Each alternative should be specifically designed for ${mode === "solo" ? "individual/solo practice" : "partner or small group training"}. Make them practical and achievable.`,
+      response_json_schema: {
+        type: "object",
+        properties: {
+          alternatives: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                description: { type: "string" },
+                duration: { type: "string" },
+                xp: { type: "number" },
+              },
+            },
+          },
+        },
+      },
+    });
+    setAiAlternatives(result.alternatives || []);
+    setLoadingAlts(false);
   };
 
   return (
@@ -64,14 +113,14 @@ export default function SwappableDetailDialog({
           </div>
 
           {/* Alternatives */}
-          {alternatives.length > 0 && (
+          {(alternatives.length > 0 || category !== "nutrition") && (
             <div className="px-4 border-t border-border flex-shrink-0">
               <button
                 onClick={() => setShowAlts(!showAlts)}
                 className="w-full flex items-center justify-between py-3 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 <span className="flex items-center gap-1.5">
-                  <RefreshCw className="w-3.5 h-3.5" /> Swap for something else ({alternatives.length} options)
+                  <RefreshCw className="w-3.5 h-3.5" /> Swap for something else ({displayAlternatives.length} options)
                 </span>
                 {showAlts ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
               </button>
@@ -83,18 +132,58 @@ export default function SwappableDetailDialog({
                     exit={{ height: 0, opacity: 0 }}
                     className="overflow-hidden"
                   >
-                    <div className="pb-3 space-y-1 max-h-40 overflow-y-auto">
-                      {alternatives.map((alt, i) => (
-                        <button
-                          key={i}
-                          onClick={() => onSwap?.(alt)}
-                          className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-secondary/50 transition-colors text-left"
-                        >
-                          <RefreshCw className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                          <span className="text-xs">{alt.name || alt.title}</span>
-                          {alt.xp && <span className="text-[10px] text-accent ml-auto">+{alt.xp}</span>}
-                        </button>
-                      ))}
+                    <div className="pb-3 space-y-2">
+                      {/* Mode Toggle */}
+                      {category !== "nutrition" && (
+                        <div className="flex rounded-lg bg-secondary p-0.5 gap-0.5">
+                          {[
+                            { key: "all", icon: RefreshCw, label: "All" },
+                            { key: "solo", icon: User, label: "Solo" },
+                            { key: "partner", icon: Users, label: "Partner" },
+                          ].map(({ key, icon: Icon, label }) => (
+                            <button
+                              key={key}
+                              onClick={() => handleModeChange(key)}
+                              className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-[10px] font-medium transition-all ${
+                                trainingMode === key
+                                  ? "bg-card shadow-sm text-foreground"
+                                  : "text-muted-foreground hover:text-foreground"
+                              }`}
+                            >
+                              <Icon className="w-3 h-3" />
+                              {label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {loadingAlts ? (
+                        <div className="flex items-center justify-center py-4 gap-2">
+                          <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                          <span className="text-xs text-muted-foreground">Finding {trainingMode} options...</span>
+                        </div>
+                      ) : displayAlternatives.length === 0 ? (
+                        <p className="text-xs text-muted-foreground text-center py-2">No alternatives found for this mode</p>
+                      ) : (
+                        <div className="space-y-1 max-h-40 overflow-y-auto">
+                          {displayAlternatives.map((alt, i) => (
+                            <button
+                              key={i}
+                              onClick={() => onSwap?.(alt)}
+                              className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-secondary/50 transition-colors text-left"
+                            >
+                              <RefreshCw className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <span className="text-xs">{alt.name || alt.title}</span>
+                                {alt.description && (
+                                  <p className="text-[10px] text-muted-foreground line-clamp-1">{alt.description}</p>
+                                )}
+                              </div>
+                              {alt.xp && <span className="text-[10px] text-accent ml-auto flex-shrink-0">+{alt.xp}</span>}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 )}
