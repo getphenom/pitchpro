@@ -22,6 +22,7 @@ import { Loader2, Trophy, TrendingUp, Sparkles, LayoutDashboard, ListChecks } fr
 import { motion } from "framer-motion";
 import PullToRefresh from "@/components/shared/PullToRefresh";
 import PainPatternAlert from "@/components/injury/PainPatternAlert";
+import BrowserNotificationPrompt from "@/components/shared/BrowserNotificationPrompt";
 
 const today = format(new Date(), "yyyy-MM-dd");
 const currentWeekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
@@ -431,6 +432,8 @@ export default function Home() {
 
 
       </PullToRefresh>
+
+      <BrowserNotificationPrompt profile={profile} />
     </div>
   );
 }

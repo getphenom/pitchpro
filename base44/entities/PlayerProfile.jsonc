@@ -144,6 +144,20 @@
         "type": "string"
       },
       "description": "Favorite/saved drill names"
+    },
+    "notifications_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether daily reminders are enabled"
+    },
+    "notification_email": {
+      "type": "string",
+      "description": "Email address for reminder notifications"
+    },
+    "browser_notifications": {
+      "type": "boolean",
+      "default": false,
+      "description": "Browser push notifications enabled"
     }
   },
   "required": [
