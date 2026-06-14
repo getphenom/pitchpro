@@ -7,6 +7,7 @@ import { POSITION_LABELS } from "@/lib/gameData";
 import { motion, AnimatePresence } from "framer-motion";
 import RecoveryDetailDialog from "@/components/recovery/RecoveryDetailDialog";
 import RecoveryTrainingNotes from "@/components/recovery/RecoveryTrainingNotes";
+import RecoveryPainChart from "@/components/recovery/RecoveryPainChart";
 import { format } from "date-fns";
 
 const today = format(new Date(), "yyyy-MM-dd");
@@ -307,6 +308,9 @@ Create a plan with:
             </div>
           </motion.div>
         )}
+
+        {/* 30-Day Pain & Progress Chart */}
+        <RecoveryPainChart profileId={profile.id} />
 
         {/* Session Notes History */}
         <RecoveryTrainingNotes profile={profile} />
