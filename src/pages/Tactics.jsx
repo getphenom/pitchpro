@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Map, Sparkles, ChevronRight, BookOpen, Clock, Flame, Zap } from "lucide-react";
+import { Loader2, Map, Sparkles, ChevronRight, BookOpen, Clock, Flame, Zap, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TutorialModal from "@/components/shared/TutorialModal";
@@ -170,6 +170,7 @@ export default function Tactics() {
   const [tutorialItem, setTutorialItem] = useState(null);
   const [activeTab, setActiveTab] = useState("possession");
   const [showAIAnalysis, setShowAIAnalysis] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: profiles, isLoading } = useQuery({
     queryKey: ["profiles"],
@@ -385,6 +386,22 @@ Make it practical and age-appropriate.`,
               </Button>
             </div>
 
+            <div className="relative">
+              <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search drills by name..."
+                className="w-full bg-card border border-border rounded-lg pl-10 pr-8 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="w-full bg-card border border-border rounded-lg p-1 gap-1 flex-wrap h-auto">
                 {Object.entries(TACTICAL_LIBRARY).map(([key, cat]) => (
@@ -402,7 +419,12 @@ Make it practical and age-appropriate.`,
                     <p className="text-xs text-muted-foreground mt-1">{cat.desc} — {cat.drills.length} drills</p>
                   </div>
                   <div className="space-y-2">
-                    {cat.drills.map((drill, i) => (
+                    {cat.drills.filter(d => !searchQuery || d.name.toLowerCase().includes(searchQuery.toLowerCase()) || d.desc.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 ? (
+                      <div className="text-center py-10 space-y-2">
+                        <Search className="w-8 h-8 text-muted-foreground/30 mx-auto" />
+                        <p className="text-xs text-muted-foreground">No drills match "{searchQuery}"</p>
+                      </div>
+                    ) : cat.drills.filter(d => !searchQuery || d.name.toLowerCase().includes(searchQuery.toLowerCase()) || d.desc.toLowerCase().includes(searchQuery.toLowerCase())).map((drill, i) => (
                       <motion.div
                         key={i}
                         initial={{ opacity: 0, y: 10 }}

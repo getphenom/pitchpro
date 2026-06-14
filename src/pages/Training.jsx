@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, startOfWeek } from "date-fns";
-import { Loader2, Dumbbell, Clock, Flame, Calendar, ChevronRight, Zap, Target, Shield, Footprints, Save, Timer, BookOpen, ClipboardList, Star, Edit3 } from "lucide-react";
+import { Loader2, Dumbbell, Clock, Flame, Calendar, ChevronRight, Zap, Target, Shield, Footprints, Save, Timer, BookOpen, ClipboardList, Star, Edit3, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { POSITION_LABELS, getLevel } from "@/lib/gameData";
@@ -147,6 +147,7 @@ export default function Training() {
   const [selectedDrill, setSelectedDrill] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("technical");
   const [showFavorites, setShowFavorites] = useState(false);
+  const [drillSearch, setDrillSearch] = useState("");
   const queryClient = useQueryClient();
 
   const { data: profiles, isLoading } = useQuery({
@@ -325,6 +326,23 @@ export default function Training() {
           <>
             <EquipmentSummary profileId={profile?.id} />
             
+            {/* Drill Search */}
+            <div className="relative">
+              <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={drillSearch}
+                onChange={(e) => setDrillSearch(e.target.value)}
+                placeholder="Search drills by name..."
+                className="w-full bg-card border border-border rounded-lg pl-10 pr-8 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+              {drillSearch && (
+                <button onClick={() => setDrillSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+            
             {/* Favorites toggle */}
             <div className="flex items-center justify-between">
               <div className="flex rounded-lg bg-secondary p-0.5">
@@ -364,6 +382,7 @@ export default function Training() {
                       }
                     });
                   });
+                  const filteredFavs = allDrills.filter(({ drill }) => !drillSearch || drill.name.toLowerCase().includes(drillSearch.toLowerCase()));
                   if (allDrills.length === 0) {
                     return (
                       <div className="text-center py-12 space-y-2">
@@ -373,7 +392,15 @@ export default function Training() {
                       </div>
                     );
                   }
-                  return allDrills.map(({ drill, category }, i) => (
+                  if (filteredFavs.length === 0) {
+                    return (
+                      <div className="text-center py-12 space-y-2">
+                        <Search className="w-10 h-10 text-muted-foreground/30 mx-auto" />
+                        <p className="text-sm text-muted-foreground">No drills match "{drillSearch}"</p>
+                      </div>
+                    );
+                  }
+                  return filteredFavs.map(({ drill, category }, i) => (
                     <DrillCard
                       key={`${category}-${drill.name}`}
                       drill={drill}
@@ -408,16 +435,27 @@ export default function Training() {
                       </p>
                     </div>
                     <div className="space-y-2">
-                      {(cat.drills[level] || []).map((drill, i) => (
-                        <DrillCard
-                          key={i}
-                          drill={drill}
-                          index={i}
-                          profile={profile}
-                          favorites={profile?.favorite_drills || []}
-                          onSelect={(d) => { setSelectedDrill(d); setSelectedCategory(key); }}
-                        />
-                      ))}
+                      {(() => {
+                        const filtered = (cat.drills[level] || []).filter(d => !drillSearch || d.name.toLowerCase().includes(drillSearch.toLowerCase()) || d.desc.toLowerCase().includes(drillSearch.toLowerCase()));
+                        if (filtered.length === 0) {
+                          return (
+                            <div className="text-center py-10 space-y-2">
+                              <Search className="w-8 h-8 text-muted-foreground/30 mx-auto" />
+                              <p className="text-xs text-muted-foreground">No drills match "{drillSearch}"</p>
+                            </div>
+                          );
+                        }
+                        return filtered.map((drill, i) => (
+                          <DrillCard
+                            key={i}
+                            drill={drill}
+                            index={i}
+                            profile={profile}
+                            favorites={profile?.favorite_drills || []}
+                            onSelect={(d) => { setSelectedDrill(d); setSelectedCategory(key); }}
+                          />
+                        ));
+                      })()}
                     </div>
                   </TabsContent>
                 ))}
