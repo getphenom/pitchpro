@@ -1,6 +1,7 @@
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { Home, Dumbbell, UtensilsCrossed, Brain, Map, User, Trophy, Heart, Target, Timer, BarChart3, Calendar, TrendingUp, ArrowLeft } from "lucide-react";
 import PostWorkoutNutritionReminder from "@/components/home/PostWorkoutNutritionReminder";
+import QuickLogWidget from "@/components/shared/QuickLogWidget";
 
 const NAV_ITEMS = [
   { path: "/", icon: Home, label: "Home" },
@@ -52,6 +53,8 @@ export default function AppLayout() {
       <div className="flex-1 pb-20 md:pb-0 md:pl-20">
         <Outlet />
       </div>
+
+      <QuickLogWidget />
 
       {/* Desktop sidebar */}
       <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-20 bg-card border-r border-border flex-col items-center py-6 gap-2 z-50">

@@ -10,7 +10,7 @@ import StreakBanner from "@/components/home/StreakBanner";
 import WeeklyProgress from "@/components/shared/WeeklyProgress";
 import PerformanceFeedback from "@/components/home/PerformanceFeedback";
 import DailyReminder from "@/components/home/DailyReminder";
-import FloatingQuickLog from "@/components/home/FloatingQuickLog";
+
 import ReadinessScore from "@/components/home/ReadinessScore";
 import WeeklySummary from "@/components/home/WeeklySummary";
 import DashboardCharts from "@/components/home/DashboardCharts";
@@ -425,13 +425,7 @@ export default function Home() {
         )}
       </div>
 
-      {/* Floating Quick-Log Bar */}
-      <FloatingQuickLog
-        dailyLog={dailyLog}
-        profile={profile}
-        onWaterUpdate={handleWaterUpdate}
-        onMealUpdate={handleMealUpdate}
-      />
+
       </PullToRefresh>
     </div>
   );
