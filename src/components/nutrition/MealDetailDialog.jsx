@@ -84,12 +84,18 @@ Keep instructions simple and practical — a ${profile?.age || "teenage"}-year-o
         </div>
       }
     >
-      {meal.note && <p className="text-sm text-muted-foreground leading-relaxed">{meal.note}</p>}
+      {(meal.desc || meal.note) && <p className="text-sm text-muted-foreground leading-relaxed">{meal.desc || meal.note}</p>}
 
       <div className="flex items-center gap-3 text-xs">
-        {meal.time && <span className="text-muted-foreground">{meal.time}</span>}
-        {meal.calories && <span className="text-primary font-semibold">{meal.calories} kcal</span>}
+        {(meal.duration || meal.time) && <span className="text-muted-foreground">{meal.duration || meal.time}</span>}
+        {meal.calories != null && <span className="text-primary font-semibold">{meal.calories} kcal</span>}
       </div>
+
+      {meal.tip && (
+        <div className="rounded-lg bg-accent/10 border border-accent/20 p-2.5">
+          <p className="text-xs font-medium text-accent">💡 {meal.tip}</p>
+        </div>
+      )}
 
       {meal.foods?.length > 0 && (
         <div>
