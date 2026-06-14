@@ -16,6 +16,8 @@ import WeeklySummary from "@/components/home/WeeklySummary";
 import DashboardCharts from "@/components/home/DashboardCharts";
 import { POSITION_LABELS, BADGES, getLevel, LEVEL_TITLES } from "@/lib/gameData";
 import { checkBadges } from "@/lib/badgeChecker";
+import { getCategoryBadge, getBadgeById } from "@/lib/categoryProgression";
+import CategoryProgression from "@/components/shared/CategoryProgression";
 import { Loader2, Trophy, TrendingUp, Sparkles, LayoutDashboard, ListChecks } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -240,7 +242,7 @@ export default function Home() {
               <p className="text-sm font-heading font-bold">Badge{newBadges.length > 1 ? 's' : ''} Unlocked!</p>
               <div className="flex flex-wrap gap-1.5 mt-1">
                 {newBadges.map(id => {
-                  const b = BADGES[id];
+                  const b = BADGES[id] || getBadgeById(id);
                   return b ? (
                     <span key={id} className="text-xs bg-accent/20 rounded-full px-2 py-0.5">
                       {b.icon} {b.name}
@@ -314,6 +316,10 @@ export default function Home() {
 
             <WeeklySummary profile={profile} />
 
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+              <CategoryProgression dailyLogs={allLogs} />
+            </motion.div>
+
             {profile.badges?.length > 0 && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
             <h3 className="font-heading font-bold text-sm tracking-wider uppercase text-muted-foreground mb-3">
@@ -321,7 +327,7 @@ export default function Home() {
             </h3>
             <div className="flex flex-wrap gap-2">
               {profile.badges.map((badgeId) => {
-                const badge = BADGES[badgeId];
+                const badge = BADGES[badgeId] || getBadgeById(badgeId);
                 if (!badge) return null;
                 return (
                   <div

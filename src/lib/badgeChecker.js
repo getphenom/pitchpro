@@ -1,4 +1,5 @@
 import { BADGE_CRITERIA } from "@/lib/gameData";
+import { checkCategoryBadges, getCategoryXp } from "@/lib/categoryProgression";
 
 /**
  * Check all badge criteria against the profile and daily logs.
@@ -17,9 +18,16 @@ export function checkBadges(profile, dailyLogs = []) {
         newlyEarned.push(badgeId);
       }
     } catch {
-      // Silently skip criteria that fail (e.g. injury_free without context)
+      // Silently skip criteria that fail
     }
   }
+
+  // Also check category-based badges
+  const categoryXp = getCategoryXp(dailyLogs);
+  const categoryBadges = checkCategoryBadges(categoryXp, profile.badges || []);
+  categoryBadges.forEach((id) => {
+    if (!earned.has(id)) newlyEarned.push(id);
+  });
 
   return newlyEarned;
 }

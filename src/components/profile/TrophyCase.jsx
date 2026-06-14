@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { BADGES, getLevel, BADGE_CRITERIA, STAT_COLORS } from "@/lib/gameData";
+import { getCategoryBadge, getCategoryXp } from "@/lib/categoryProgression";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
 import { Trophy, Lock, TrendingUp, Sparkles, Award } from "lucide-react";
@@ -62,33 +63,8 @@ const PROGRESS_HINTS = {
 
 export default function TrophyCase({ profile }) {
   const [selectedBadgeId, setSelectedBadgeId] = useState(null);
-  const [filter, setFilter] = useState("all"); // "all" | "pillars" | "milestones"
+  const [filter, setFilter] = useState("all");
   const earnedIds = profile.badges || [];
-  const earnedCount = earnedIds.length;
-  const totalCount = Object.keys(BADGES).length;
-
-  const isPillarBadge = (id) => !!BADGES[id]?.pillar;
-
-  const filteredBadges = useMemo(() => {
-    return Object.entries(BADGES).filter(([id]) => {
-      if (filter === "pillars") return isPillarBadge(id);
-      if (filter === "milestones") return !isPillarBadge(id);
-      return true;
-    });
-  }, [filter]);
-
-  const filterCounts = useMemo(() => {
-    const all = Object.entries(BADGES);
-    return {
-      all: all.length,
-      pillars: all.filter(([id]) => isPillarBadge(id)).length,
-      milestones: all.filter(([id]) => !isPillarBadge(id)).length,
-    };
-  }, []);
-
-  const earnedInFilter = useMemo(() => {
-    return filteredBadges.filter(([id]) => earnedIds.includes(id)).length;
-  }, [filteredBadges, earnedIds]);
 
   const { data: dailyLogs = [] } = useQuery({
     queryKey: ["daily-logs-all"],
@@ -96,7 +72,54 @@ export default function TrophyCase({ profile }) {
     enabled: !!profile?.id,
   });
 
-  const selectedBadge = BADGES[selectedBadgeId];
+  const categoryXp = useMemo(() => getCategoryXp(dailyLogs), [dailyLogs]);
+
+  // Build all category badge entries
+  const categoryBadges = useMemo(() => {
+    const badges = [];
+    const categories = ["technical", "physical", "tactical", "mental", "nutrition", "hydration", "recovery"];
+    categories.forEach((cat) => {
+      [0, 1, 2, 3].forEach((tier) => {
+        const badge = getCategoryBadge(cat, tier);
+        if (badge) badges.push([badge.id, badge]);
+      });
+    });
+    return badges;
+  }, []);
+
+  // Merge regular + category badges
+  const allBadgeEntries = useMemo(() => {
+    return [...Object.entries(BADGES), ...categoryBadges];
+  }, [categoryBadges]);
+
+  const totalCount = allBadgeEntries.length;
+  const earnedCount = earnedIds.length;
+
+  const isPillarBadge = (id) => {
+    if (BADGES[id]?.pillar) return true;
+    if (id?.startsWith("cat_")) return true;
+    return false;
+  };
+
+  const filteredBadges = useMemo(() => {
+    return allBadgeEntries.filter(([id]) => {
+      if (filter === "pillars") return isPillarBadge(id);
+      if (filter === "milestones") return !isPillarBadge(id);
+      return true;
+    });
+  }, [filter, allBadgeEntries]);
+
+  const filterCounts = useMemo(() => ({
+    all: allBadgeEntries.length,
+    pillars: allBadgeEntries.filter(([id]) => isPillarBadge(id)).length,
+    milestones: allBadgeEntries.filter(([id]) => !isPillarBadge(id)).length,
+  }), [allBadgeEntries]);
+
+  const earnedInFilter = useMemo(() => {
+    return filteredBadges.filter(([id]) => earnedIds.includes(id)).length;
+  }, [filteredBadges, earnedIds]);
+
+  const selectedBadge = BADGES[selectedBadgeId] || (categoryBadges.find(([id]) => id === selectedBadgeId)?.[1]);
   const isSelectedEarned = earnedIds.includes(selectedBadgeId);
   const selectedHint = PROGRESS_HINTS[selectedBadgeId];
   const selectedProgress = selectedHint ? Math.min(Math.round((selectedHint.metric(profile) / selectedHint.goal) * 100), 100) : 0;
@@ -157,9 +180,18 @@ export default function TrophyCase({ profile }) {
       <div className="grid grid-cols-2 gap-2">
         {filteredBadges.map(([id, badge]) => {
           const earned = earnedIds.includes(id);
-          const criteriaFn = BADGE_CRITERIA[id];
+          const isCat = id?.startsWith("cat_");
           const progHint = PROGRESS_HINTS[id];
-          const progress = progHint ? Math.min(Math.round((progHint.metric(profile) / progHint.goal) * 100), 99) : 0;
+          let progress = 0;
+          let progLabel = "";
+          
+          if (isCat) {
+            const catXp = categoryXp[badge.category] || 0;
+            progress = Math.min(Math.round((catXp / badge.threshold) * 100), 99);
+            progLabel = `${catXp} / ${badge.threshold} XP`;
+          } else if (progHint) {
+            progress = Math.min(Math.round((progHint.metric(profile) / progHint.goal) * 100), 99);
+          }
 
           const pillarColor = badge.pillar ? STAT_COLORS[badge.pillar] : null;
 
@@ -255,7 +287,9 @@ export default function TrophyCase({ profile }) {
                      {selectedBadge.name}
                    </DialogTitle>
                    <DialogDescription className="text-xs">
-                     {selectedBadge.pillar ? `${PILLAR_LABELS[selectedBadge.pillar]} · Tier ${selectedBadge.tier}` : (isSelectedEarned ? selectedBadge.desc : "Locked")}
+                     {selectedBadge.pillar 
+                       ? `${PILLAR_LABELS[selectedBadge.pillar] || selectedBadge.category?.charAt(0).toUpperCase() + selectedBadge.category?.slice(1)} · Tier ${selectedBadge.tier}` 
+                       : (isSelectedEarned ? selectedBadge.desc : "Locked")}
                    </DialogDescription>
                   </div>
                 </div>
@@ -307,10 +341,14 @@ export default function TrophyCase({ profile }) {
                 {selectedBadge.pillar ? (
                   <div className="grid grid-cols-3 gap-2">
                     <div className="text-center rounded-lg bg-secondary/50 p-2">
-                      <p className="text-lg font-heading font-bold" style={{ color: STAT_COLORS[selectedBadge.pillar] }}>
-                        {profile.stats?.[selectedBadge.pillar] || 0}
+                      <p className="text-lg font-heading font-bold" style={{ color: STAT_COLORS[selectedBadge.pillar] || "#22c55e" }}>
+                        {selectedBadge.category
+                          ? (categoryXp[selectedBadge.category] || 0)
+                          : (profile.stats?.[selectedBadge.pillar] || 0)}
                       </p>
-                      <p className="text-[9px] text-muted-foreground">{PILLAR_LABELS[selectedBadge.pillar]} Rating</p>
+                      <p className="text-[9px] text-muted-foreground">
+                        {selectedBadge.category ? "Category XP" : `${PILLAR_LABELS[selectedBadge.pillar]} Rating`}
+                      </p>
                     </div>
                     <div className="text-center rounded-lg bg-secondary/50 p-2">
                       <p className="text-lg font-heading font-bold text-primary">{getLevel(profile.xp || 0)}</p>

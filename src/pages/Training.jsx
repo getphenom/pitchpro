@@ -6,6 +6,7 @@ import { Loader2, Dumbbell, Clock, Flame, Calendar, ChevronRight, Zap, Target, S
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { POSITION_LABELS, getLevel } from "@/lib/gameData";
+import { getCategoryXp, getCategoryTier, CATEGORY_THRESHOLDS, TIER_LABELS, TIER_ICONS } from "@/lib/categoryProgression";
 import { motion } from "framer-motion";
 import TrainingPlanGenerator from "@/components/training/TrainingPlanGenerator";
 import TrainingCalendar from "@/components/training/TrainingCalendar";
@@ -182,6 +183,23 @@ export default function Training() {
     queryFn: () => base44.entities.DailyLog.list("-date", 30),
     enabled: !!profile,
   });
+
+  const { data: allLogs = [] } = useQuery({
+    queryKey: ["all-training-logs"],
+    queryFn: () => base44.entities.DailyLog.list("-date", 200),
+    enabled: !!profile,
+  });
+
+  const categoryXp = getCategoryXp(allLogs);
+
+  // Tier → unlocked drill levels (index into ["beginner","intermediate","advanced","elite"])
+  const UNLOCKED_LEVELS = ["beginner", "intermediate", "advanced", "elite"];
+
+  const getUnlockedLevelIndex = (category) => {
+    const tier = getCategoryTier(categoryXp[category] || 0);
+    // tier -1: only beginner (0), tier 0: up to intermediate (1), tier 1: up to advanced (2), tier 2+: all (3)
+    return Math.min(tier + 1, 3);
+  };
 
   if (isLoading) {
     return (
@@ -375,11 +393,15 @@ export default function Training() {
               <div className="space-y-2">
                 {(() => {
                   const allDrills = [];
-                  Object.entries(TRAINING_CATEGORIES).forEach(([key, cat]) => {
-                    (cat.drills[level] || []).forEach((drill) => {
-                      if (profile?.favorite_drills?.includes(drill.name)) {
-                        allDrills.push({ drill, category: key });
-                      }
+                  Object.entries(TRAINING_CATEGORIES).forEach(([catKey, cat]) => {
+                    const unlockedIdx = getUnlockedLevelIndex(catKey);
+                    const unlockedLevels = UNLOCKED_LEVELS.slice(0, unlockedIdx + 1);
+                    unlockedLevels.forEach((lvl) => {
+                      (cat.drills[lvl] || []).forEach((drill) => {
+                        if (profile?.favorite_drills?.includes(drill.name)) {
+                          allDrills.push({ drill, category: catKey });
+                        }
+                      });
                     });
                   });
                   const filteredFavs = allDrills.filter(({ drill }) => !drillSearch || drill.name.toLowerCase().includes(drillSearch.toLowerCase()));
@@ -426,17 +448,73 @@ export default function Training() {
                   ))}
                 </TabsList>
 
-                {Object.entries(TRAINING_CATEGORIES).map(([key, cat]) => (
+                {Object.entries(TRAINING_CATEGORIES).map(([key, cat]) => {
+                  const tier = getCategoryTier(categoryXp[key] || 0);
+                  const unlockedIndex = getUnlockedLevelIndex(key);
+                  const unlockedLevels = UNLOCKED_LEVELS.slice(0, unlockedIndex + 1);
+                  
+                  // Collect all drills from unlocked levels
+                  const allUnlocked = [];
+                  unlockedLevels.forEach((lvl) => {
+                    (cat.drills[lvl] || []).forEach((d) => allUnlocked.push({ ...d, _level: lvl }));
+                  });
+
+                  return (
                   <TabsContent key={key} value={key} className="space-y-3 mt-4">
                     <div className={`rounded-xl border bg-gradient-to-br p-4 ${cat.color}`}>
-                      <h3 className="font-semibold text-sm">{cat.label} Training</h3>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {cat.drills[level]?.length || 0} drills for your level
-                      </p>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-semibold text-sm">{cat.label} Training</h3>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {allUnlocked.length} drills unlocked
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {tier >= 0 ? (
+                            <span className="text-xs font-medium" style={{ color: cat.color?.match(/#[a-f0-9]+/i)?.[0] || "#22c55e" }}>
+                              {TIER_ICONS[tier]} {TIER_LABELS[tier]}
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-muted-foreground">No tier</span>
+                          )}
+                        </div>
+                      </div>
                     </div>
+
+                    {/* Locked tier previews */}
+                    {UNLOCKED_LEVELS.slice(unlockedIndex + 1).map((lvl, offset) => {
+                      const lvlDrills = cat.drills[lvl] || [];
+                      if (lvlDrills.length === 0) return null;
+                      const nextTierIdx = tier + offset + 1;
+                      const neededXp = CATEGORY_THRESHOLDS[nextTierIdx] || CATEGORY_THRESHOLDS[3];
+                      const currentXp = categoryXp[key] || 0;
+                      const remaining = Math.max(0, neededXp - currentXp);
+                      return (
+                        <div key={lvl} className="rounded-xl border border-border/50 bg-secondary/20 p-3 opacity-60">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <p className="text-[10px] uppercase tracking-wider font-heading text-muted-foreground">
+                              {lvl} Level — Locked
+                            </p>
+                            <span className="text-[10px] text-muted-foreground">
+                              {TIER_ICONS[nextTierIdx]} {remaining} XP to unlock
+                            </span>
+                          </div>
+                          <div className="space-y-1">
+                            {lvlDrills.map((drill, i) => (
+                              <div key={i} className="flex items-center gap-2 py-1">
+                                <span className="text-muted-foreground/40 text-xs">🔒</span>
+                                <span className="text-xs text-muted-foreground/60">{drill.name}</span>
+                                <span className="text-[10px] text-muted-foreground/40 ml-auto">{drill.xp} XP</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+
                     <div className="space-y-2">
                       {(() => {
-                        const filtered = (cat.drills[level] || []).filter(d => !drillSearch || d.name.toLowerCase().includes(drillSearch.toLowerCase()) || d.desc.toLowerCase().includes(drillSearch.toLowerCase()));
+                        const filtered = allUnlocked.filter(d => !drillSearch || d.name.toLowerCase().includes(drillSearch.toLowerCase()) || d.desc.toLowerCase().includes(drillSearch.toLowerCase()));
                         if (filtered.length === 0) {
                           return (
                             <div className="text-center py-10 space-y-2">
@@ -446,19 +524,25 @@ export default function Training() {
                           );
                         }
                         return filtered.map((drill, i) => (
-                          <DrillCard
-                            key={i}
-                            drill={drill}
-                            index={i}
-                            profile={profile}
-                            favorites={profile?.favorite_drills || []}
-                            onSelect={(d) => { setSelectedDrill(d); setSelectedCategory(key); }}
-                          />
+                          <div key={i}>
+                            {i === 0 || drill._level !== filtered[i-1]._level ? (
+                              <p className="text-[10px] font-heading uppercase tracking-wider text-muted-foreground mb-2 mt-1">
+                                {drill._level}
+                              </p>
+                            ) : null}
+                            <DrillCard
+                              drill={drill}
+                              index={i}
+                              profile={profile}
+                              favorites={profile?.favorite_drills || []}
+                              onSelect={(d) => { setSelectedDrill(d); setSelectedCategory(key); }}
+                            />
+                          </div>
                         ));
                       })()}
                     </div>
                   </TabsContent>
-                ))}
+                )})}
               </Tabs>
             )}
           </>
