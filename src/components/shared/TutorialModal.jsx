@@ -64,7 +64,7 @@ Write for a young athlete (age 10-18). Use simple, encouraging language.`;
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
         onClick={onClose}
       >
         <motion.div
@@ -73,7 +73,7 @@ Write for a young athlete (age 10-18). Use simple, encouraging language.`;
           exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
           onClick={(e) => e.stopPropagation()}
-          className="bg-card w-full sm:max-w-lg max-h-[85vh] rounded-t-2xl sm:rounded-2xl flex flex-col overflow-hidden"
+          className="bg-card w-full sm:max-w-lg max-h-[85vh] rounded-2xl flex flex-col overflow-hidden border border-border"
         >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
