@@ -24,6 +24,7 @@ import Development from "@/pages/Development";
 import Recovery from "@/pages/Recovery";
 import MonthlySummary from "@/pages/MonthlySummary";
 import CalendarPage from "@/pages/Calendar";
+import Insights from "@/pages/Insights";
 import Onboarding from "@/pages/Onboarding";
 import Assessment from "@/pages/Assessment";
 
@@ -70,6 +71,7 @@ const AuthenticatedApp = () => {
           <Route path="/recovery" element={<Recovery />} />
           <Route path="/monthly" element={<MonthlySummary />} />
           <Route path="/calendar" element={<CalendarPage />} />
+          <Route path="/insights" element={<Insights />} />
           <Route path="/assessment" element={<Assessment />} />
         </Route>
       </Route>
