@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Activity, Moon, Droplets, Zap, ChevronDown, ChevronUp } from "lucide-react";
 
 function calculateReadiness(dailyLog, profile) {
-  if (!dailyLog) return { score: 50, label: "No Data", color: "text-muted-foreground", bg: "bg-muted", desc: "Log some data today to get your readiness score." };
+  if (!dailyLog) return { score: 50, label: "No Data", color: "text-muted-foreground", bg: "bg-muted", desc: "Log some data today to get your readiness score.", details: { sleepScore: 0, waterScore: 0, trainingScore: 0, sleep: 0, water: 0, waterGoal: getWaterGoal(profile?.age, profile?.weight_kg), completedDrills: 0 } };
 
   // Sleep score (0-100): ideal 8+ hours, 0 if missing
   const sleep = dailyLog.sleep_hours || 0;
