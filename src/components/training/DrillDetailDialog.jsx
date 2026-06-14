@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Flame, Clock, Play, Image, ExternalLink, BookOpen, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { Flame, Clock, Play, Image, ExternalLink, BookOpen, ChevronDown, ChevronUp, Loader2, Video, Upload, Edit3, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import SwappableDetailDialog from "@/components/shared/SwappableDetailDialog";
 import DrillEquipmentInfo from "@/components/training/DrillEquipmentInfo";
@@ -16,6 +16,12 @@ export default function DrillDetailDialog({ open, onClose, drill, category, prof
   const [resources, setResources] = useState(null);
   const [loadingResources, setLoadingResources] = useState(false);
   const [expandedStep, setExpandedStep] = useState(null);
+  const [showLogForm, setShowLogForm] = useState(false);
+  const [sessionNotes, setSessionNotes] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [logged, setLogged] = useState(false);
+  const fileInputRef = useRef(null);
   const queryClient = useQueryClient();
 
   const toggleFavorite = useMutation({
@@ -91,6 +97,52 @@ Return 3-4 high-quality resources with YouTube search queries, channel names, an
     });
     setResources(result);
     setLoadingResources(false);
+  };
+
+  const handleVideoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const result = await base44.integrations.Core.UploadFile({ file });
+      setVideoUrl(result.file_url);
+    } catch (err) {
+      console.error("Upload failed", err);
+    }
+    setUploading(false);
+  };
+
+  const handleLogTraining = async () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const logs = await base44.entities.DailyLog.filter({ player_id: profile.id, date: today });
+    const log = logs[0];
+
+    const entry = {
+      category,
+      drill_name: drill.name,
+      completed: true,
+      xp_earned: drill.xp || 0,
+      notes: sessionNotes,
+      video_url: videoUrl,
+    };
+
+    if (log) {
+      const training = [...(log.training_completed || []), entry];
+      await base44.entities.DailyLog.update(log.id, {
+        training_completed: training,
+        xp_earned_today: (log.xp_earned_today || 0) + (drill.xp || 0),
+      });
+    } else {
+      await base44.entities.DailyLog.create({
+        player_id: profile.id,
+        date: today,
+        training_completed: [entry],
+        xp_earned_today: drill.xp || 0,
+      });
+    }
+    setLogged(true);
+    queryClient.invalidateQueries({ queryKey: ["training-log-history"] });
+    queryClient.invalidateQueries({ queryKey: ["daily-logs"] });
   };
 
   if (!open || !drill) return null;
@@ -194,6 +246,80 @@ Return 3-4 high-quality resources with YouTube search queries, channel names, an
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Log Training */}
+      <div className="border-t border-border pt-3">
+        {logged ? (
+          <div className="flex items-center gap-2 py-2 px-3 rounded-lg bg-primary/10 border border-primary/20 text-xs text-primary">
+            <Check className="w-4 h-4" /> Training logged — +{drill.xp} XP
+          </div>
+        ) : showLogForm ? (
+          <div className="space-y-3">
+            <div>
+              <p className="text-[10px] font-heading font-bold tracking-wider uppercase text-muted-foreground mb-1.5">
+                <Edit3 className="w-3 h-3 inline mr-1" /> Session Notes
+              </p>
+              <textarea
+                value={sessionNotes}
+                onChange={(e) => setSessionNotes(e.target.value)}
+                placeholder="How did this drill feel? What did you improve?..."
+                className="w-full bg-secondary/50 border border-border rounded-lg px-3 py-2 text-xs resize-none placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary h-20"
+              />
+            </div>
+            <div>
+              <p className="text-[10px] font-heading font-bold tracking-wider uppercase text-muted-foreground mb-1.5">
+                <Video className="w-3 h-3 inline mr-1" /> Record Your Form
+              </p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="video/*"
+                onChange={handleVideoUpload}
+                className="hidden"
+              />
+              {videoUrl ? (
+                <div className="space-y-2">
+                  <video src={videoUrl} controls className="w-full rounded-lg max-h-48 bg-black" />
+                  <button onClick={() => { setVideoUrl(""); if (fileInputRef.current) fileInputRef.current.value = ""; }} className="text-[10px] text-muted-foreground hover:text-foreground">
+                    Remove & re-upload
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-all text-xs text-muted-foreground hover:text-primary disabled:opacity-50"
+                >
+                  {uploading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4" /> Upload a short form clip
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setShowLogForm(false)} className="flex-1 py-2 rounded-lg text-xs border border-border hover:bg-secondary transition-colors">
+                Cancel
+              </button>
+              <button onClick={handleLogTraining} className="flex-1 py-2 rounded-lg text-xs bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+                Log Training
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowLogForm(true)}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-all text-xs font-medium"
+          >
+            <Video className="w-3.5 h-3.5" /> Log & Record Training
+          </button>
+        )}
+      </div>
 
       {/* Resources */}
       <AnimatePresence>

@@ -57,6 +57,12 @@
           "xp_earned": {
             "type": "number",
             "default": 0
+          },
+          "notes": {
+            "type": "string"
+          },
+          "video_url": {
+            "type": "string"
           }
         }
       }

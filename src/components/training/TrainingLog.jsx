@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Loader2, Search, Calendar, Flame, Clock, Edit3, ChevronRight, Filter, X, Star } from "lucide-react";
+import { Loader2, Search, Calendar, Flame, Clock, Edit3, ChevronRight, Filter, X, Star, Video, Play } from "lucide-react";
 import { motion } from "framer-motion";
 
 const INTENSITY_MAP = {
@@ -164,21 +164,35 @@ export default function TrainingLog({ profile }) {
                     </div>
                   </div>
 
-                  {/* Expanded: notes + context */}
+                  {/* Expanded: notes + video + context */}
                   {selectedEntry === i && (
                     <div className="mt-3 pt-3 border-t border-border space-y-2">
+                      {entry.video_url && (
+                        <div>
+                          <p className="text-[10px] font-heading font-bold uppercase tracking-wider text-muted-foreground mb-1 flex items-center gap-1">
+                            <Video className="w-3 h-3" /> Form Clip
+                          </p>
+                          <video
+                            src={entry.video_url}
+                            controls
+                            className="w-full rounded-lg max-h-56 bg-black"
+                            preload="metadata"
+                          />
+                        </div>
+                      )}
+
                       {hasNotes ? (
                         <div>
                           <p className="text-[10px] font-heading font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                            Session Notes
+                            <Edit3 className="w-3 h-3 inline mr-1" /> Session Notes
                           </p>
                           <p className="text-xs text-muted-foreground leading-relaxed bg-secondary/50 rounded-lg p-2.5">
                             {entry.notes}
                           </p>
                         </div>
-                      ) : (
-                        <p className="text-xs text-muted-foreground/50 italic">No notes recorded for this session</p>
-                      )}
+                      ) : !entry.video_url ? (
+                        <p className="text-xs text-muted-foreground/50 italic">No notes or clips recorded</p>
+                      ) : null}
 
                       {(entry.mood || entry.sleep_hours) && (
                         <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
