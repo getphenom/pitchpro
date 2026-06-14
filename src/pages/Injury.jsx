@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import InjuryTrainingNotes from "@/components/injury/InjuryTrainingNotes";
+import PainPatternAlert from "@/components/injury/PainPatternAlert";
 
 const BODY_PARTS = [
   "ankle", "knee", "hamstring", "quad", "groin", "hip",
@@ -181,6 +182,9 @@ export default function Injury() {
             <Plus className="w-4 h-4 mr-1" /> Log Injury
           </Button>
         </motion.div>
+
+        {/* Pain Pattern Alert */}
+        {profile && <PainPatternAlert profile={profile} />}
 
         {/* Training Load Recommendation */}
         {recommendation && (

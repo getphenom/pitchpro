@@ -21,6 +21,7 @@ import CategoryProgression from "@/components/shared/CategoryProgression";
 import { Loader2, Trophy, TrendingUp, Sparkles, LayoutDashboard, ListChecks } from "lucide-react";
 import { motion } from "framer-motion";
 import PullToRefresh from "@/components/shared/PullToRefresh";
+import PainPatternAlert from "@/components/injury/PainPatternAlert";
 
 const today = format(new Date(), "yyyy-MM-dd");
 const currentWeekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
@@ -219,6 +220,9 @@ export default function Home() {
             <span className="font-heading font-bold text-xl text-primary">{level}</span>
           </div>
         </motion.div>
+
+        {/* Pain Pattern Alert */}
+        <PainPatternAlert profile={profile} />
 
         {/* XP Bar */}
         <motion.div
