@@ -1,12 +1,23 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Map, Sparkles, ChevronRight, BookOpen } from "lucide-react";
+import { Loader2, Map, Sparkles, ChevronRight, BookOpen, Clock, Flame, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TutorialModal from "@/components/shared/TutorialModal";
 import { POSITION_LABELS } from "@/lib/gameData";
 import { motion } from "framer-motion";
 import TacticalCoachChat from "@/components/agents/TacticalCoachChat";
+
+const TACTICAL_DRILLS = [
+  { name: "Positional Rondo", duration: "15 min", desc: "4v2 possession in a 10x10 grid — focus on creating triangles and passing angles", xp: 25, icon: "🔄" },
+  { name: "Shadow Play", duration: "15 min", desc: "Walk through attacking patterns without opposition — 11 positions, ball movement", xp: 20, icon: "👥" },
+  { name: "Transition Sprint", duration: "10 min", desc: "Attack-to-defence transitions — sprint back to defensive shape after losing possession", xp: 20, icon: "⚡" },
+  { name: "Build-Up Pattern", duration: "15 min", desc: "Practice playing out from the back through thirds — GK to CB to CM to ST", xp: 25, icon: "🏗️" },
+  { name: "Pressing Trigger Drill", duration: "10 min", desc: "Identify pressing cues and press as a unit — 3 triggers: bad touch, back pass, slow turn", xp: 20, icon: "🎯" },
+  { name: "Third Man Run", duration: "15 min", desc: "Practice combination play using a third man — pass, move, find the free player", xp: 25, icon: "🏃" },
+  { name: "Defensive Shape", duration: "10 min", desc: "Maintain compact defensive block, shift as the ball moves — 4-4-2 and 4-3-3 shapes", xp: 20, icon: "🛡️" },
+  { name: "Counter-Attack Drill", duration: "15 min", desc: "Win the ball and break at speed — 3v2 counter with a recovering defender", xp: 30, icon: "💨" },
+];
 
 const FORMATIONS = [
   { name: "4-3-3", style: "Attacking", desc: "Balanced formation with 3 forwards. Great for wing play." },
@@ -153,7 +164,14 @@ Make it practical and age-appropriate.`,
     );
   }
 
-  if (!profile) return null;
+  if (!profile) return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="text-center space-y-3">
+        <Map className="w-12 h-12 text-muted-foreground/30 mx-auto" />
+        <p className="text-sm text-muted-foreground">Complete your profile first to unlock tactical training.</p>
+      </div>
+    </div>
+  );
 
   const posData = POSITION_ROLES[profile.position] || POSITION_ROLES.central_mid;
 
@@ -237,6 +255,46 @@ Make it practical and age-appropriate.`,
                 {selectedFormation === i && (
                   <p className="text-xs text-muted-foreground mt-2">{f.desc}</p>
                 )}
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        {/* Tactical Drills */}
+        <div className="space-y-3">
+          <h3 className="font-heading font-bold text-sm tracking-wider uppercase text-muted-foreground">
+            Tactical Drills
+          </h3>
+          <div className="space-y-2">
+            {TACTICAL_DRILLS.map((drill, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+                onClick={() => setTutorialItem(drill)}
+                className="p-4 rounded-xl bg-card border border-border hover:border-orange-500/30 transition-all cursor-pointer group"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-orange-500/15 flex items-center justify-center flex-shrink-0">
+                    <span className="text-lg">{drill.icon}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-sm group-hover:text-orange-400 transition-colors">{drill.name}</h4>
+                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{drill.desc}</p>
+                    <span className="text-[10px] text-muted-foreground mt-1 group-hover:text-primary transition-colors inline-flex items-center gap-0.5">
+                      <BookOpen className="w-3 h-3" /> Tap for tutorial
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Clock className="w-3 h-3" />{drill.duration}
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-accent font-semibold">
+                      <Flame className="w-3 h-3" />{drill.xp} XP
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </div>
