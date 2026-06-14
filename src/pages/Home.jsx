@@ -20,6 +20,7 @@ import { getCategoryBadge, getBadgeById } from "@/lib/categoryProgression";
 import CategoryProgression from "@/components/shared/CategoryProgression";
 import { Loader2, Trophy, TrendingUp, Sparkles, LayoutDashboard, ListChecks } from "lucide-react";
 import { motion } from "framer-motion";
+import PullToRefresh from "@/components/shared/PullToRefresh";
 
 const today = format(new Date(), "yyyy-MM-dd");
 const currentWeekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
@@ -85,14 +86,33 @@ export default function Home() {
         return base44.entities.DailyLog.create({ player_id: profile.id, date: today, ...data });
       }
     },
-    onSuccess: () => {
+    onMutate: async (newData) => {
+      await queryClient.cancelQueries({ queryKey: ["daily-log", today] });
+      const previousLogs = queryClient.getQueryData(["daily-log", today]);
+      const optimisticLog = { ...dailyLog, ...newData };
+      queryClient.setQueryData(["daily-log", today], [optimisticLog]);
+      return { previousLogs };
+    },
+    onError: (_err, _newData, context) => {
+      queryClient.setQueryData(["daily-log", today], context.previousLogs);
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["daily-log"] });
     },
   });
 
   const updateProfile = useMutation({
     mutationFn: async (data) => base44.entities.PlayerProfile.update(profile.id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["profiles"] }),
+    onMutate: async (newData) => {
+      await queryClient.cancelQueries({ queryKey: ["profiles"] });
+      const previousProfiles = queryClient.getQueryData(["profiles"]);
+      queryClient.setQueryData(["profiles"], [{ ...profile, ...newData }]);
+      return { previousProfiles };
+    },
+    onError: (_err, _newData, context) => {
+      queryClient.setQueryData(["profiles"], context.previousProfiles);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["profiles"] }),
   });
 
   const handleQuestComplete = async (quest, notes = "") => {
@@ -170,8 +190,17 @@ export default function Home() {
   const level = getLevel(profile.xp || 0);
   const title = LEVEL_TITLES[level - 1] || "Legend";
 
+  const handleRefresh = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["daily-log"] }),
+      queryClient.invalidateQueries({ queryKey: ["profiles"] }),
+      queryClient.invalidateQueries({ queryKey: ["stat-snapshots"] }),
+    ]);
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <PullToRefresh onRefresh={handleRefresh}>
       <div className="max-w-2xl mx-auto px-4 py-6 pb-28 space-y-6">
         {/* Header */}
         <motion.div
@@ -403,6 +432,7 @@ export default function Home() {
         onWaterUpdate={handleWaterUpdate}
         onMealUpdate={handleMealUpdate}
       />
+      </PullToRefresh>
     </div>
   );
 }

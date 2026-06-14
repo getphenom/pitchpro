@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { POSITION_LABELS, getLevel } from "@/lib/gameData";
 import { getCategoryXp, getCategoryTier, CATEGORY_THRESHOLDS, TIER_LABELS, TIER_ICONS } from "@/lib/categoryProgression";
 import { motion } from "framer-motion";
+import PullToRefresh from "@/components/shared/PullToRefresh";
 import TrainingPlanGenerator from "@/components/training/TrainingPlanGenerator";
 import TrainingCalendar from "@/components/training/TrainingCalendar";
 import TrainingTemplates from "@/components/training/TrainingTemplates";
@@ -213,8 +214,18 @@ export default function Training() {
 
   const level = profile.skill_level || "beginner";
 
+  const handleRefresh = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["profiles"] }),
+      queryClient.invalidateQueries({ queryKey: ["training-logs"] }),
+      queryClient.invalidateQueries({ queryKey: ["all-training-logs"] }),
+      queryClient.invalidateQueries({ queryKey: ["stat-snapshots"] }),
+    ]);
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <PullToRefresh onRefresh={handleRefresh}>
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -557,6 +568,7 @@ export default function Training() {
           <FitnessTrainerChat profile={profile} />
         </motion.div>
       </div>
+      </PullToRefresh>
     </div>
   );
 }

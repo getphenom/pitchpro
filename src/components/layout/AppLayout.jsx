@@ -1,5 +1,5 @@
-import { Outlet, Link, useLocation } from "react-router-dom";
-import { Home, Dumbbell, UtensilsCrossed, Brain, Map, User, Trophy, Heart, Target, Timer, BarChart3, Calendar, TrendingUp } from "lucide-react";
+import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
+import { Home, Dumbbell, UtensilsCrossed, Brain, Map, User, Trophy, Heart, Target, Timer, BarChart3, Calendar, TrendingUp, ArrowLeft } from "lucide-react";
 import PostWorkoutNutritionReminder from "@/components/home/PostWorkoutNutritionReminder";
 
 const NAV_ITEMS = [
@@ -19,10 +19,36 @@ const NAV_ITEMS = [
 
 export default function AppLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const isRoot = location.pathname === "/";
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <PostWorkoutNutritionReminder />
+
+      {/* Persistent top header */}
+      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border safe-area-top">
+        <div className="flex items-center h-12 px-4 max-w-2xl mx-auto w-full">
+          {!isRoot && (
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mr-auto"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="text-xs font-medium">Back</span>
+            </button>
+          )}
+          {isRoot && (
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center">
+                <Trophy className="w-4 h-4 text-primary" />
+              </div>
+              <span className="font-heading font-bold text-sm tracking-wide">SoccerPro</span>
+            </div>
+          )}
+        </div>
+      </header>
+
       <div className="flex-1 pb-20 md:pb-0 md:pl-20">
         <Outlet />
       </div>
@@ -51,7 +77,7 @@ export default function AppLayout() {
       </nav>
 
       {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t-2 border-border shadow-[0_-4px_20px_rgba(0,0,0,0.5)] flex justify-around items-center py-3 px-2 z-50 safe-area-bottom">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t-2 border-border shadow-[0_-4px_20px_rgba(0,0,0,0.5)] flex justify-around items-center py-3 px-2 z-50 safe-area-bottom" style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))" }}>
         {NAV_ITEMS.map((item) => {
           const isActive = location.pathname === item.path;
           return (

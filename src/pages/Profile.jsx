@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Edit2, Save, LogOut, Trophy, Flame, Star, Award, Sun, Moon, ClipboardCheck, RefreshCw } from "lucide-react";
+import { Loader2, Edit2, Save, LogOut, Trophy, Flame, Star, Award, Sun, Moon, ClipboardCheck, RefreshCw, Trash2, AlertTriangle } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -336,6 +337,55 @@ export default function Profile() {
         >
           <LogOut className="w-4 h-4 mr-2" /> Logout
         </Button>
+
+        {/* Account Deletion */}
+        <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-destructive" />
+            <h3 className="font-heading font-bold text-sm text-destructive">Account Deletion</h3>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Permanently delete your profile, stats, badges, and all training data. This cannot be undone.
+          </p>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="sm" className="w-full">
+                <Trash2 className="w-4 h-4 mr-2" /> Delete My Account
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle className="flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-destructive" />
+                  Delete Account Permanently?
+                </AlertDialogTitle>
+                <AlertDialogDescription asChild>
+                  <div className="space-y-3">
+                    <p>
+                      This will permanently erase your player profile <strong>{profile.player_name}</strong>,
+                      all stats, XP, badges, daily logs, training plans, and assessment data.
+                    </p>
+                    <p className="font-semibold text-destructive">This action cannot be undone.</p>
+                  </div>
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={async () => {
+                    try {
+                      await base44.entities.PlayerProfile.delete(profile.id);
+                      base44.auth.logout("/");
+                    } catch {}
+                  }}
+                  className="bg-destructive hover:bg-destructive/90"
+                >
+                  <Trash2 className="w-4 h-4 mr-1" /> Delete Forever
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
     </div>
   );

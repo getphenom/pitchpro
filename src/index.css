@@ -107,3 +107,27 @@
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
+
+/* ── Mobile Compatibility ── */
+* {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+html, body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+input, textarea, [contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
