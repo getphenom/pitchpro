@@ -1,10 +1,15 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { BADGES, getLevel, BADGE_CRITERIA } from "@/lib/gameData";
+import { BADGES, getLevel, BADGE_CRITERIA, STAT_COLORS } from "@/lib/gameData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
 import { Trophy, Lock, TrendingUp, Sparkles, Award } from "lucide-react";
+
+const PILLAR_LABELS = {
+  pace: "Pace", shooting: "Shooting", passing: "Passing", dribbling: "Dribbling",
+  defending: "Defending", physical: "Physical", mental: "Mental", tactical: "Tactical",
+};
 
 const PROGRESS_HINTS = {
   streak_3: { hint: "3-day streak", goal: 3, metric: (p) => p.streak_days || 0 },
@@ -20,13 +25,70 @@ const PROGRESS_HINTS = {
   xp_1000: { hint: "Earn 1,000 XP", goal: 1000, metric: (p) => p.xp || 0 },
   xp_5000: { hint: "Earn 5,000 XP", goal: 5000, metric: (p) => p.xp || 0 },
   xp_10000: { hint: "Earn 10,000 XP", goal: 10000, metric: (p) => p.xp || 0 },
+  // Pillar progress hints
+  pace_60: { hint: "Pace to 60", goal: 60, metric: (p) => p.stats?.pace || 0 },
+  pace_75: { hint: "Pace to 75", goal: 75, metric: (p) => p.stats?.pace || 0 },
+  pace_90: { hint: "Pace to 90", goal: 90, metric: (p) => p.stats?.pace || 0 },
+  pace_99: { hint: "Pace to 99", goal: 99, metric: (p) => p.stats?.pace || 0 },
+  shooting_60: { hint: "Shooting to 60", goal: 60, metric: (p) => p.stats?.shooting || 0 },
+  shooting_75: { hint: "Shooting to 75", goal: 75, metric: (p) => p.stats?.shooting || 0 },
+  shooting_90: { hint: "Shooting to 90", goal: 90, metric: (p) => p.stats?.shooting || 0 },
+  shooting_99: { hint: "Shooting to 99", goal: 99, metric: (p) => p.stats?.shooting || 0 },
+  passing_60: { hint: "Passing to 60", goal: 60, metric: (p) => p.stats?.passing || 0 },
+  passing_75: { hint: "Passing to 75", goal: 75, metric: (p) => p.stats?.passing || 0 },
+  passing_90: { hint: "Passing to 90", goal: 90, metric: (p) => p.stats?.passing || 0 },
+  passing_99: { hint: "Passing to 99", goal: 99, metric: (p) => p.stats?.passing || 0 },
+  dribbling_60: { hint: "Dribbling to 60", goal: 60, metric: (p) => p.stats?.dribbling || 0 },
+  dribbling_75: { hint: "Dribbling to 75", goal: 75, metric: (p) => p.stats?.dribbling || 0 },
+  dribbling_90: { hint: "Dribbling to 90", goal: 90, metric: (p) => p.stats?.dribbling || 0 },
+  dribbling_99: { hint: "Dribbling to 99", goal: 99, metric: (p) => p.stats?.dribbling || 0 },
+  defending_60: { hint: "Defending to 60", goal: 60, metric: (p) => p.stats?.defending || 0 },
+  defending_75: { hint: "Defending to 75", goal: 75, metric: (p) => p.stats?.defending || 0 },
+  defending_90: { hint: "Defending to 90", goal: 90, metric: (p) => p.stats?.defending || 0 },
+  defending_99: { hint: "Defending to 99", goal: 99, metric: (p) => p.stats?.defending || 0 },
+  physical_60: { hint: "Physical to 60", goal: 60, metric: (p) => p.stats?.physical || 0 },
+  physical_75: { hint: "Physical to 75", goal: 75, metric: (p) => p.stats?.physical || 0 },
+  physical_90: { hint: "Physical to 90", goal: 90, metric: (p) => p.stats?.physical || 0 },
+  physical_99: { hint: "Physical to 99", goal: 99, metric: (p) => p.stats?.physical || 0 },
+  mental_60: { hint: "Mental to 60", goal: 60, metric: (p) => p.stats?.mental || 0 },
+  mental_75: { hint: "Mental to 75", goal: 75, metric: (p) => p.stats?.mental || 0 },
+  mental_90: { hint: "Mental to 90", goal: 90, metric: (p) => p.stats?.mental || 0 },
+  mental_99: { hint: "Mental to 99", goal: 99, metric: (p) => p.stats?.mental || 0 },
+  tactical_60: { hint: "Tactical to 60", goal: 60, metric: (p) => p.stats?.tactical || 0 },
+  tactical_75: { hint: "Tactical to 75", goal: 75, metric: (p) => p.stats?.tactical || 0 },
+  tactical_90: { hint: "Tactical to 90", goal: 90, metric: (p) => p.stats?.tactical || 0 },
+  tactical_99: { hint: "Tactical to 99", goal: 99, metric: (p) => p.stats?.tactical || 0 },
 };
 
 export default function TrophyCase({ profile }) {
   const [selectedBadgeId, setSelectedBadgeId] = useState(null);
+  const [filter, setFilter] = useState("all"); // "all" | "pillars" | "milestones"
   const earnedIds = profile.badges || [];
   const earnedCount = earnedIds.length;
   const totalCount = Object.keys(BADGES).length;
+
+  const isPillarBadge = (id) => !!BADGES[id]?.pillar;
+
+  const filteredBadges = useMemo(() => {
+    return Object.entries(BADGES).filter(([id]) => {
+      if (filter === "pillars") return isPillarBadge(id);
+      if (filter === "milestones") return !isPillarBadge(id);
+      return true;
+    });
+  }, [filter]);
+
+  const filterCounts = useMemo(() => {
+    const all = Object.entries(BADGES);
+    return {
+      all: all.length,
+      pillars: all.filter(([id]) => isPillarBadge(id)).length,
+      milestones: all.filter(([id]) => !isPillarBadge(id)).length,
+    };
+  }, []);
+
+  const earnedInFilter = useMemo(() => {
+    return filteredBadges.filter(([id]) => earnedIds.includes(id)).length;
+  }, [filteredBadges, earnedIds]);
 
   const { data: dailyLogs = [] } = useQuery({
     queryKey: ["daily-logs-all"],
@@ -70,34 +132,69 @@ export default function TrophyCase({ profile }) {
         />
       </div>
 
+      {/* Filter Tabs */}
+      <div className="flex rounded-lg bg-secondary p-0.5">
+        {[
+          { key: "all", label: "All", count: filterCounts.all },
+          { key: "pillars", label: "Pillar Stats", count: filterCounts.pillars },
+          { key: "milestones", label: "Milestones", count: filterCounts.milestones },
+        ].map(({ key, label, count }) => (
+          <button
+            key={key}
+            onClick={() => setFilter(key)}
+            className={`flex-1 py-1.5 rounded-md text-[10px] font-medium transition-all ${
+              filter === key
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {label} <span className="opacity-50">({earnedIds.filter(id => key === "all" ? true : key === "pillars" ? isPillarBadge(id) : !isPillarBadge(id)).length}/{count})</span>
+          </button>
+        ))}
+      </div>
+
       {/* Badge Grid */}
       <div className="grid grid-cols-2 gap-2">
-        {Object.entries(BADGES).map(([id, badge]) => {
+        {filteredBadges.map(([id, badge]) => {
           const earned = earnedIds.includes(id);
           const criteriaFn = BADGE_CRITERIA[id];
           const progHint = PROGRESS_HINTS[id];
           const progress = progHint ? Math.min(Math.round((progHint.metric(profile) / progHint.goal) * 100), 99) : 0;
+
+          const pillarColor = badge.pillar ? STAT_COLORS[badge.pillar] : null;
 
           return (
             <motion.div
               key={id}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.05 * Object.keys(BADGES).indexOf(id) + 0.1 }}
+              transition={{ delay: 0.02 * filteredBadges.findIndex(([fid]) => fid === id) + 0.05 }}
               onClick={() => setSelectedBadgeId(id)}
               className={`relative rounded-xl border p-3 flex items-center gap-3 transition-all cursor-pointer ${
-                earned
-                  ? "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/30 hover:border-primary/50"
-                  : "bg-secondary/50 border-border opacity-75 hover:opacity-100"
+                earned && pillarColor
+                  ? "hover:opacity-90"
+                  : earned
+                    ? "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/30 hover:border-primary/50"
+                    : "bg-secondary/50 border-border opacity-75 hover:opacity-100"
               }`}
+              style={earned && pillarColor ? {
+                background: `linear-gradient(135deg, ${pillarColor}18, ${pillarColor}06)`,
+                borderColor: `${pillarColor}40`,
+              } : {}}
             >
               {/* Badge Icon */}
               <div
                 className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl ${
-                  earned
-                    ? "bg-primary/20 animate-glow"
-                    : "bg-muted grayscale"
+                  earned && pillarColor
+                    ? ""
+                    : earned
+                      ? "bg-primary/20 animate-glow"
+                      : "bg-muted grayscale"
                 }`}
+                style={earned && pillarColor ? {
+                  background: `${pillarColor}28`,
+                  boxShadow: `0 0 10px ${pillarColor}35`,
+                } : {}}
               >
                 {badge.icon}
               </div>
@@ -140,19 +237,26 @@ export default function TrophyCase({ profile }) {
               <DialogHeader>
                 <div className="flex items-center gap-3">
                   <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl ${
-                    isSelectedEarned
-                      ? "bg-primary/20 animate-glow"
-                      : "bg-muted grayscale"
-                  }`}>
+                    isSelectedEarned && selectedBadge.pillar
+                      ? ""
+                      : isSelectedEarned
+                        ? "bg-primary/20 animate-glow"
+                        : "bg-muted grayscale"
+                  }`}
+                  style={isSelectedEarned && selectedBadge.pillar && STAT_COLORS[selectedBadge.pillar] ? {
+                    background: `${STAT_COLORS[selectedBadge.pillar]}25`,
+                    boxShadow: `0 0 15px ${STAT_COLORS[selectedBadge.pillar]}40`,
+                  } : {}}
+                  >
                     {selectedBadge.icon}
                   </div>
                   <div className="text-left">
-                    <DialogTitle className="font-heading text-lg">
-                      {selectedBadge.name}
-                    </DialogTitle>
-                    <DialogDescription className="text-xs">
-                      {isSelectedEarned ? selectedBadge.desc : "Locked"}
-                    </DialogDescription>
+                   <DialogTitle className="font-heading text-lg">
+                     {selectedBadge.name}
+                   </DialogTitle>
+                   <DialogDescription className="text-xs">
+                     {selectedBadge.pillar ? `${PILLAR_LABELS[selectedBadge.pillar]} · Tier ${selectedBadge.tier}` : (isSelectedEarned ? selectedBadge.desc : "Locked")}
+                   </DialogDescription>
                   </div>
                 </div>
               </DialogHeader>
@@ -161,9 +265,16 @@ export default function TrophyCase({ profile }) {
                 {/* Status */}
                 <div className={`rounded-xl p-4 ${
                   isSelectedEarned
-                    ? "bg-primary/10 border border-primary/20"
+                    ? selectedBadge.pillar ? "" : "bg-primary/10 border border-primary/20"
                     : "bg-secondary/50 border border-border"
-                }`}>
+                }`}
+                style={isSelectedEarned && selectedBadge.pillar && STAT_COLORS[selectedBadge.pillar] ? {
+                  background: `${STAT_COLORS[selectedBadge.pillar]}15`,
+                  borderColor: `${STAT_COLORS[selectedBadge.pillar]}30`,
+                  borderWidth: "1px",
+                  borderStyle: "solid",
+                } : {}}
+                >
                   {isSelectedEarned ? (
                     <div className="flex items-center gap-2 text-sm">
                       <Award className="w-5 h-5 text-accent" />
@@ -193,20 +304,39 @@ export default function TrophyCase({ profile }) {
                 </div>
 
                 {/* Context Stats */}
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="text-center rounded-lg bg-secondary/50 p-2">
-                    <p className="text-lg font-heading font-bold text-primary">{profile.streak_days || 0}</p>
-                    <p className="text-[9px] text-muted-foreground">Day Streak</p>
+                {selectedBadge.pillar ? (
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="text-center rounded-lg bg-secondary/50 p-2">
+                      <p className="text-lg font-heading font-bold" style={{ color: STAT_COLORS[selectedBadge.pillar] }}>
+                        {profile.stats?.[selectedBadge.pillar] || 0}
+                      </p>
+                      <p className="text-[9px] text-muted-foreground">{PILLAR_LABELS[selectedBadge.pillar]} Rating</p>
+                    </div>
+                    <div className="text-center rounded-lg bg-secondary/50 p-2">
+                      <p className="text-lg font-heading font-bold text-primary">{getLevel(profile.xp || 0)}</p>
+                      <p className="text-[9px] text-muted-foreground">Level</p>
+                    </div>
+                    <div className="text-center rounded-lg bg-secondary/50 p-2">
+                      <p className="text-lg font-heading font-bold text-primary">{profile.xp || 0}</p>
+                      <p className="text-[9px] text-muted-foreground">Total XP</p>
+                    </div>
                   </div>
-                  <div className="text-center rounded-lg bg-secondary/50 p-2">
-                    <p className="text-lg font-heading font-bold text-primary">{getLevel(profile.xp || 0)}</p>
-                    <p className="text-[9px] text-muted-foreground">Level</p>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="text-center rounded-lg bg-secondary/50 p-2">
+                      <p className="text-lg font-heading font-bold text-primary">{profile.streak_days || 0}</p>
+                      <p className="text-[9px] text-muted-foreground">Day Streak</p>
+                    </div>
+                    <div className="text-center rounded-lg bg-secondary/50 p-2">
+                      <p className="text-lg font-heading font-bold text-primary">{getLevel(profile.xp || 0)}</p>
+                      <p className="text-[9px] text-muted-foreground">Level</p>
+                    </div>
+                    <div className="text-center rounded-lg bg-secondary/50 p-2">
+                      <p className="text-lg font-heading font-bold text-primary">{profile.xp || 0}</p>
+                      <p className="text-[9px] text-muted-foreground">Total XP</p>
+                    </div>
                   </div>
-                  <div className="text-center rounded-lg bg-secondary/50 p-2">
-                    <p className="text-lg font-heading font-bold text-primary">{profile.xp || 0}</p>
-                    <p className="text-[9px] text-muted-foreground">Total XP</p>
-                  </div>
-                </div>
+                )}
               </div>
             </>
           )}
