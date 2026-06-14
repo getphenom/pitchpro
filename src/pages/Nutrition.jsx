@@ -9,6 +9,8 @@ import { POSITION_LABELS } from "@/lib/gameData";
 import { motion } from "framer-motion";
 import NutritionCoachChat from "@/components/agents/NutritionCoachChat";
 import NutritionVsTraining from "@/components/nutrition/NutritionVsTraining";
+import DailyMacroLogger from "@/components/nutrition/DailyMacroLogger";
+import MacroChart from "@/components/nutrition/MacroChart";
 
 const MEAL_CATEGORIES = {
   pre_training: {
@@ -362,6 +364,12 @@ Focus on real, practical foods that a ${profile.age}-year-old would actually eat
             </Tabs>
           </div>
         )}
+
+        {/* Daily Macro Logger */}
+        <DailyMacroLogger profile={profile} />
+
+        {/* Macro Intake Chart */}
+        <MacroChart profile={profile} />
 
         {/* Nutrition vs Training Comparison */}
         <NutritionVsTraining profile={profile} />

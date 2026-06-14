@@ -39,6 +39,21 @@
         }
       }
     },
+    "protein_g": {
+      "type": "number",
+      "default": 0,
+      "description": "Grams of protein consumed today"
+    },
+    "carbs_g": {
+      "type": "number",
+      "default": 0,
+      "description": "Grams of carbohydrates consumed today"
+    },
+    "fat_g": {
+      "type": "number",
+      "default": 0,
+      "description": "Grams of fat consumed today"
+    },
     "training_completed": {
       "type": "array",
       "items": {
