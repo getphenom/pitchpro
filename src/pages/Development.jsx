@@ -39,7 +39,7 @@ export default function Development() {
   const [loading, setLoading] = useState(false);
   const [expandedPhase, setExpandedPhase] = useState(null);
   const [expandedWeek, setExpandedWeek] = useState(null);
-  const [activeTab, setActiveTab] = useState("idp");
+  const [activeTab, setActiveTab] = useState("ltdp");
   const [planSubTab, setPlanSubTab] = useState("phases");
   const [expandedPillar, setExpandedPillar] = useState(null);
   const [tutorialItem, setTutorialItem] = useState(null);
@@ -261,7 +261,7 @@ Make drills EXACTLY age-appropriate for a ${profile.age}-year-old. Use realistic
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-2xl font-heading font-bold">Development Plan</h1>
           <p className="text-xs text-muted-foreground mt-1">
-            Your IDP & LTDP as a {POSITION_LABELS[profile.position]}
+            Your Development Journey as a {POSITION_LABELS[profile.position]}
           </p>
         </motion.div>
 
@@ -290,8 +290,8 @@ Make drills EXACTLY age-appropriate for a ${profile.age}-year-old. Use realistic
         {/* Tabs */}
         <div className="flex gap-1 bg-secondary rounded-xl p-1">
           {[
-            { key: "idp",  label: "IDP/LTDP", icon: <Layers className="w-3.5 h-3.5" /> },
-            { key: "plan", label: "My Plan",  icon: <Target className="w-3.5 h-3.5" /> },
+            { key: "idp",  label: "IDP", icon: <Target className="w-3.5 h-3.5" /> },
+            { key: "ltdp", label: "LTDP",  icon: <Layers className="w-3.5 h-3.5" /> },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -308,8 +308,8 @@ Make drills EXACTLY age-appropriate for a ${profile.age}-year-old. Use realistic
           ))}
         </div>
 
-        {/* ── IDP/LTDP Tab ── */}
-        {activeTab === "idp" && (
+        {/* ── LTDP Tab (Structured Library) ── */}
+        {activeTab === "ltdp" && (
           <div className="space-y-4">
             {/* Progress Overview */}
             <motion.div
@@ -487,13 +487,13 @@ Make drills EXACTLY age-appropriate for a ${profile.age}-year-old. Use realistic
           </div>
         )}
 
-        {/* ── My Plan Tab (existing AI-generated plan) ── */}
-        {activeTab === "plan" && (
+        {/* ── IDP Tab (Personalized AI-Generated Plan) ── */}
+        {activeTab === "idp" && (
           <>
             {loading && (
               <div className="flex flex-col items-center justify-center py-16 gap-4">
                 <Loader2 className="w-12 h-12 animate-spin text-primary" />
-                <p className="text-sm text-muted-foreground">Building your year-long development plan...</p>
+                <p className="text-sm text-muted-foreground">Building your Individual Development Plan...</p>
               </div>
             )}
 
@@ -502,12 +502,12 @@ Make drills EXACTLY age-appropriate for a ${profile.age}-year-old. Use realistic
                 <div className="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto">
                   <Sparkles className="w-8 h-8 text-primary" />
                 </div>
-                <h3 className="font-heading font-bold text-lg">Custom Plan Generator</h3>
+                <h3 className="font-heading font-bold text-lg">Individual Development Plan</h3>
                 <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-                  Generate a personalized year-long development plan with phases, weekly goals, skill targets, and checkpoints — tailored to your position, age, and current stats.
+                  Generate your personalized IDP with phases, weekly goals, skill targets, and checkpoints — tailored to your position, age, and current stats.
                 </p>
                 <Button className="bg-primary hover:bg-primary/90" onClick={generatePlan}>
-                  <Sparkles className="w-4 h-4 mr-2" /> Generate My Plan
+                  <Sparkles className="w-4 h-4 mr-2" /> Generate My IDP
                 </Button>
               </div>
             )}
@@ -841,7 +841,7 @@ Make drills EXACTLY age-appropriate for a ${profile.age}-year-old. Use realistic
                     });
                   }}
                 >
-                  Generate New Plan
+                  Generate New IDP
                 </Button>
               </>
             )}
