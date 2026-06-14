@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, startOfWeek } from "date-fns";
-import { Loader2, Dumbbell, Clock, Flame, Calendar, ChevronRight, Zap, Target, Shield, Footprints, Save, Timer, BookOpen, ClipboardList, Star } from "lucide-react";
+import { Loader2, Dumbbell, Clock, Flame, Calendar, ChevronRight, Zap, Target, Shield, Footprints, Save, Timer, BookOpen, ClipboardList, Star, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { POSITION_LABELS, getLevel } from "@/lib/gameData";
@@ -17,6 +17,7 @@ import DrillEquipmentInfo from "@/components/training/DrillEquipmentInfo";
 import EquipmentSummary from "@/components/training/EquipmentSummary";
 import FitnessTrainerChat from "@/components/agents/FitnessTrainerChat";
 import PlayerAssessment from "@/components/training/PlayerAssessment";
+import TrainingLog from "@/components/training/TrainingLog";
 
 const TRAINING_CATEGORIES = {
   technical: {
@@ -271,6 +272,17 @@ export default function Training() {
                 <ClipboardList className="w-3.5 h-3.5 inline mr-1" />
                 Tests
               </button>
+              <button
+                onClick={() => { setViewMode("log"); setShowPlan(false); }}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  viewMode === "log"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Edit3 className="w-3.5 h-3.5 inline mr-1" />
+                Log
+              </button>
             </div>
             {viewMode === "drills" && (
               <Button
@@ -305,6 +317,8 @@ export default function Training() {
           <TrainingSchedule profile={profile} />
         ) : viewMode === "tests" ? (
           <PlayerAssessment profile={profile} />
+        ) : viewMode === "log" ? (
+          <TrainingLog profile={profile} />
         ) : showPlan ? (
           <TrainingPlanGenerator profile={profile} />
         ) : (
