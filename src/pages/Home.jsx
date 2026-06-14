@@ -93,7 +93,7 @@ export default function Home() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["profiles"] }),
   });
 
-  const handleQuestComplete = async (quest) => {
+  const handleQuestComplete = async (quest, notes = "") => {
     const currentCompleted = dailyLog?.quests_completed || [];
     const isCompleted = currentCompleted.includes(quest.id);
 
@@ -103,9 +103,28 @@ export default function Home() {
     const xpDelta = isCompleted ? -quest.xp : quest.xp;
     const newXp = (dailyLog?.xp_earned_today || 0) + xpDelta;
 
+    // Build updated training_completed with notes
+    const currentTraining = dailyLog?.training_completed || [];
+    let newTraining = [...currentTraining];
+    if (quest.category === "training") {
+      if (isCompleted) {
+        newTraining = newTraining.filter((t) => t.drill_name !== quest.title);
+      } else {
+        newTraining.push({
+          category: quest.category,
+          drill_name: quest.title,
+          completed: true,
+          xp_earned: quest.xp,
+          notes: notes,
+          date: today,
+        });
+      }
+    }
+
     await updateLog.mutateAsync({
       quests_completed: newCompleted,
       xp_earned_today: Math.max(0, newXp),
+      ...(quest.category === "training" ? { training_completed: newTraining } : {}),
     });
 
     const updatedProfile = {

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { POSITION_LABELS } from "@/lib/gameData";
 import { motion, AnimatePresence } from "framer-motion";
 import RecoveryDetailDialog from "@/components/recovery/RecoveryDetailDialog";
+import RecoveryTrainingNotes from "@/components/recovery/RecoveryTrainingNotes";
 import { format } from "date-fns";
 
 const today = format(new Date(), "yyyy-MM-dd");
@@ -306,6 +307,9 @@ Create a plan with:
             </div>
           </motion.div>
         )}
+
+        {/* Session Notes History */}
+        <RecoveryTrainingNotes profile={profile} />
 
         {/* AI Recovery Plan */}
         <div className="space-y-3">

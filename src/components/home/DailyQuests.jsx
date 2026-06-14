@@ -73,7 +73,7 @@ export default function DailyQuests({ profile, dailyLog, onQuestComplete }) {
         open={!!selectedQuest}
         onClose={() => setSelectedQuest(null)}
         item={selectedQuest}
-        onAction={(quest) => onQuestComplete(quest)}
+        onAction={(quest, notes) => onQuestComplete(quest, notes)}
       />
       <div className="flex items-center justify-between">
         <h3 className="font-heading font-bold text-sm tracking-wider uppercase text-muted-foreground">

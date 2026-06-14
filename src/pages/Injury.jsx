@@ -16,6 +16,7 @@ import {
   CheckCircle2, Clock, TrendingUp, Dumbbell, Zap, Loader2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import InjuryTrainingNotes from "@/components/injury/InjuryTrainingNotes";
 
 const BODY_PARTS = [
   "ankle", "knee", "hamstring", "quad", "groin", "hip",
@@ -423,6 +424,9 @@ export default function Injury() {
             })}
           </motion.div>
         )}
+
+        {/* Training Notes History */}
+        <InjuryTrainingNotes profile={profile} />
 
         {/* Healed Injuries */}
         {healedInjuries.length > 0 && (

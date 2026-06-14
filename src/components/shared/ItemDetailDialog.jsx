@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { X, Star, CheckCircle2, Undo2, Dumbbell, Droplets, UtensilsCrossed, Brain, Map, Timer, Info, Lightbulb, Circle, ChevronDown, ChevronUp } from "lucide-react";
+import { X, Star, CheckCircle2, Undo2, Dumbbell, Droplets, UtensilsCrossed, Brain, Map, Timer, Info, Lightbulb, Circle, ChevronDown, ChevronUp, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "framer-motion";
 
 const CATEGORY_META = {
@@ -270,6 +271,7 @@ const QUEST_GUIDES = {
 export default function ItemDetailDialog({ open, onClose, item, onAction }) {
   const [completedSteps, setCompletedSteps] = useState({});
   const [showTips, setShowTips] = useState(false);
+  const [sessionNotes, setSessionNotes] = useState("");
 
   if (!open || !item) return null;
 
@@ -427,6 +429,24 @@ export default function ItemDetailDialog({ open, onClose, item, onAction }) {
             )}
           </div>
 
+          {/* Session Notes (training quests only) */}
+          {!completed && category === "training" && (
+            <div className="px-5 pt-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <Edit3 className="w-3.5 h-3.5 text-muted-foreground" />
+                <label className="text-xs font-heading font-bold uppercase tracking-wider text-muted-foreground">
+                  Session Notes
+                </label>
+              </div>
+              <Textarea
+                value={sessionNotes}
+                onChange={(e) => setSessionNotes(e.target.value)}
+                placeholder="How did this session feel? Energy level, soreness, technique notes..."
+                className="h-20 text-xs resize-none"
+              />
+            </div>
+          )}
+
           {/* Action */}
           <div className="p-5 border-t border-border flex-shrink-0">
             <Button
@@ -435,7 +455,7 @@ export default function ItemDetailDialog({ open, onClose, item, onAction }) {
                   ? "bg-secondary hover:bg-secondary/80 text-foreground"
                   : "bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
               }`}
-              onClick={() => { onAction?.(item); onClose(); }}
+              onClick={() => { onAction?.(item, sessionNotes); onClose(); }}
             >
               {completed ? (
                 <>
