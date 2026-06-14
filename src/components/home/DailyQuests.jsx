@@ -87,6 +87,7 @@ export default function DailyQuests({ profile, dailyLog, onQuestComplete }) {
             key={quest.id}
             quest={quest}
             onPress={() => setSelectedQuest(quest)}
+            onToggle={(q) => onQuestComplete(q)}
           />
         ))}
       </div>
