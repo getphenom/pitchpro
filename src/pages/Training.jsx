@@ -387,9 +387,13 @@ export default function Training() {
               </div>
             ) : (
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="w-full bg-secondary">
+                <TabsList className="w-full bg-card border border-border rounded-lg p-1 gap-1">
                   {Object.entries(TRAINING_CATEGORIES).map(([key, cat]) => (
-                    <TabsTrigger key={key} value={key} className="flex-1 text-xs">
+                    <TabsTrigger
+                      key={key}
+                      value={key}
+                      className="flex-1 text-xs py-2 rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-secondary transition-all"
+                    >
                       <span className="mr-1">{cat.icon}</span> {cat.label}
                     </TabsTrigger>
                   ))}
