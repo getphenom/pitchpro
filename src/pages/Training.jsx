@@ -77,7 +77,7 @@ const TRAINING_CATEGORIES = {
   tactical: {
     icon: "📋",
     label: "Tactical",
-    color: "from-orange-500/20 to-orange-600/5 border-orange-500/20",
+    color: "from-orange-500/20 to-orange-600/10 border-orange-500/20",
     drills: {
       beginner: [
         { name: "Position Awareness", duration: "10 min", desc: "Study where your position should be in different phases", xp: 15 },
