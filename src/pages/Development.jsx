@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Sparkles, Target, ChevronDown, ChevronUp, Calendar, Flag, BookOpen, CheckCircle2, Clock, Award, Zap, TrendingUp, BarChart3, Layers } from "lucide-react";
+import { Loader2, Sparkles, Target, ChevronDown, ChevronUp, Calendar, Flag, BookOpen, CheckCircle2, Clock, Award, Zap, TrendingUp, BarChart3, Layers, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { POSITION_LABELS } from "@/lib/gameData";
 import { motion, AnimatePresence } from "framer-motion";
@@ -32,6 +33,15 @@ const categoryIcons = {
   tactical: "📋",
   mental: "🧠",
   recovery: "🧘",
+};
+
+const pillarPageMap = {
+  technical: "/train",
+  physical: "/train",
+  tactical: "/tactics",
+  mental: "/mental",
+  nutrition: "/nutrition",
+  recovery: "/train",
 };
 
 export default function Development() {
@@ -290,8 +300,8 @@ Make drills EXACTLY age-appropriate for a ${profile.age}-year-old. Use realistic
         {/* Tabs */}
         <div className="flex gap-1 bg-secondary rounded-xl p-1">
           {[
-            { key: "idp",  label: "IDP", icon: <Target className="w-3.5 h-3.5" /> },
-            { key: "ltdp", label: "LTDP",  icon: <Layers className="w-3.5 h-3.5" /> },
+            { key: "ltdp", label: "LTDP", icon: <Layers className="w-3.5 h-3.5" /> },
+            { key: "idp",  label: "IDP",  icon: <Target className="w-3.5 h-3.5" /> },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -402,6 +412,12 @@ Make drills EXACTLY age-appropriate for a ${profile.age}-year-old. Use realistic
                       >
                         <div className="px-4 pb-4 space-y-3">
                           <p className="text-sm font-medium">{pillar.vision}</p>
+                          <Link
+                            to={pillarPageMap[pillar.pillar] || "/train"}
+                            className="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-secondary/50 hover:bg-secondary/80 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            <ArrowRight className="w-3 h-3" /> Go to {pillar.label} Training
+                          </Link>
                           {pillar.phases.map((phase, phi) => {
                             const isCurrentPhase = phi === pillar.completedPhases;
                             const isCompleted = phi < pillar.completedPhases;
@@ -752,12 +768,21 @@ Make drills EXACTLY age-appropriate for a ${profile.age}-year-old. Use realistic
                                           </div>
                                           <p className="text-sm font-medium mt-0.5">{day.drill_name}</p>
                                           <p className="text-xs text-muted-foreground mt-0.5">{day.goal}</p>
-                                          <button
-                                            onClick={(e) => { e.stopPropagation(); setTutorialItem(day); }}
-                                            className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5 mt-1"
-                                          >
-                                            <BookOpen className="w-3 h-3" /> How To
-                                          </button>
+                                          <div className="flex items-center gap-3 mt-1">
+                                            <button
+                                              onClick={(e) => { e.stopPropagation(); setTutorialItem(day); }}
+                                              className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5"
+                                            >
+                                              <BookOpen className="w-3 h-3" /> How To
+                                            </button>
+                                            <Link
+                                              to={pillarPageMap[day.category] || "/train"}
+                                              onClick={(e) => e.stopPropagation()}
+                                              className="text-[10px] text-muted-foreground hover:text-accent transition-colors flex items-center gap-0.5"
+                                            >
+                                              <ArrowRight className="w-3 h-3" /> Train
+                                            </Link>
+                                          </div>
                                         </div>
                                       </div>
                                     ))}
