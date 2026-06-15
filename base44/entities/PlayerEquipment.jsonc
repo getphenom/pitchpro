@@ -42,6 +42,15 @@
             ],
             "default": "not_applicable"
           },
+          "usage_hours": {
+            "type": "number",
+            "default": 0,
+            "description": "Estimated hours this item has been used"
+          },
+          "max_hours": {
+            "type": "number",
+            "description": "Recommended max hours before considering replacement"
+          },
           "notes": {
             "type": "string"
           }

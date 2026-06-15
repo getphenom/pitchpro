@@ -17,6 +17,7 @@ import TrainingSchedule from "@/components/training/TrainingSchedule";
 import DrillDetailDialog from "@/components/training/DrillDetailDialog";
 import DrillEquipmentInfo from "@/components/training/DrillEquipmentInfo";
 import EquipmentSummary from "@/components/training/EquipmentSummary";
+import MaintenanceTracker from "@/components/equipment/MaintenanceTracker";
 import FitnessTrainerChat from "@/components/agents/FitnessTrainerChat";
 import PlayerAssessment from "@/components/training/PlayerAssessment";
 import TrainingLog from "@/components/training/TrainingLog";
@@ -354,6 +355,7 @@ export default function Training() {
         ) : (
           <>
             <EquipmentSummary profileId={profile?.id} />
+            <MaintenanceTracker profile={profile} />
             
             {/* Drill Search */}
             <div className="relative">
