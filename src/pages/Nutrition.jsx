@@ -389,12 +389,9 @@ export default function Nutrition() {
                       <button
                         key={mt.key}
                         onClick={() => setMealType(mt.key)}
-                        disabled={count === 0}
                         className={`flex-1 flex flex-col items-center gap-0.5 py-2 rounded-lg text-xs font-medium transition-all border ${
                           mealType === mt.key
                             ? "bg-primary/10 border-primary/30 text-primary"
-                            : count === 0
-                            ? "border-transparent text-muted-foreground/30 cursor-not-allowed"
                             : "border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
                         }`}
                       >
