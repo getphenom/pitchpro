@@ -1,12 +1,12 @@
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
-import { Home, Dumbbell, UtensilsCrossed, Brain, Zap, ArrowLeft, Trophy } from "lucide-react";
+import { Home, Dumbbell, UtensilsCrossed, Brain, CircleUser, ArrowLeft, Trophy } from "lucide-react";
 import PostWorkoutNutritionReminder from "@/components/home/PostWorkoutNutritionReminder";
 import QuickLogWidget from "@/components/shared/QuickLogWidget";
 
 const NAV_ITEMS = [
   { path: "/", icon: Home, label: "Home" },
   { path: "/train", icon: Dumbbell, label: "Train" },
-  { path: "/player", icon: Zap, label: "Player" },
+  { path: "/player", icon: CircleUser, label: "Profile", isProfile: true },
   { path: "/nutrition", icon: UtensilsCrossed, label: "Fuel" },
   { path: "/mental", icon: Brain, label: "Mind" },
 ];
@@ -73,9 +73,27 @@ export default function AppLayout() {
       </nav>
 
       {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t-2 border-border shadow-[0_-4px_20px_rgba(0,0,0,0.5)] flex justify-around items-center py-3 px-2 z-50 safe-area-bottom" style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))" }}>
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t-2 border-border shadow-[0_-4px_20px_rgba(0,0,0,0.5)] flex justify-around items-center py-2 px-2 z-50 safe-area-bottom" style={{ paddingBottom: "calc(0.5rem + env(safe-area-inset-bottom, 0px))" }}>
         {NAV_ITEMS.map((item) => {
           const isActive = location.pathname === item.path;
+          if (item.isProfile) {
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className="flex flex-col items-center -mt-5"
+              >
+                <div className={`w-11 h-11 rounded-full flex items-center justify-center transition-all shadow-lg
+                  ${isActive
+                    ? "bg-primary text-primary-foreground shadow-primary/30"
+                    : "bg-secondary text-muted-foreground hover:bg-primary/20 hover:text-primary"}`}
+                >
+                  <item.icon className="w-5 h-5" />
+                </div>
+                <span className={`text-[10px] font-semibold mt-0.5 ${isActive ? "text-primary" : "text-foreground/70"}`}>{item.label}</span>
+              </Link>
+            );
+          }
           return (
             <Link
               key={item.path}
