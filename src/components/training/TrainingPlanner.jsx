@@ -1,8 +1,9 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format, startOfWeek, addDays, isSameDay, isToday, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths } from "date-fns";
-import { ChevronLeft, ChevronRight, CheckCircle2, Clock, Dumbbell, Calendar as CalendarIcon, Sparkles, BookOpen } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle2, Clock, Dumbbell, Calendar as CalendarIcon, Sparkles, BookOpen, ExternalLink, Brain, UtensilsCrossed, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import TutorialModal from "@/components/shared/TutorialModal";
 import DrillEquipmentInfo from "@/components/training/DrillEquipmentInfo";
@@ -15,9 +16,34 @@ const CATEGORY_COLORS = {
   tactical: "bg-orange-500/15 border-orange-500/30 text-orange-400",
   mental: "bg-purple-500/15 border-purple-500/30 text-purple-400",
   recovery: "bg-teal-500/15 border-teal-500/30 text-teal-400",
+  nutrition: "bg-amber-500/15 border-amber-500/30 text-amber-400",
+  hydration: "bg-cyan-500/15 border-cyan-500/30 text-cyan-400",
+};
+
+const CATEGORY_ROUTES = {
+  technical: null,   // stays on training
+  physical: null,
+  tactical: null,
+  mental: "/mental",
+  nutrition: "/nutrition",
+  recovery: "/recovery",
+  hydration: "/nutrition",
+  general: null,
+};
+
+const CATEGORY_ICONS = {
+  technical: Dumbbell,
+  physical: Dumbbell,
+  tactical: Dumbbell,
+  mental: Brain,
+  nutrition: UtensilsCrossed,
+  recovery: Heart,
+  hydration: UtensilsCrossed,
+  general: Dumbbell,
 };
 
 export default function TrainingPlanner({ profile, dailyLogs = [] }) {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [viewMode, setViewMode] = useState("month"); // "month" | "week"
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -132,25 +158,43 @@ export default function TrainingPlanner({ profile, dailyLogs = [] }) {
             <div className="space-y-2">
               {planData.week.daily_goals?.map((dg, di) => {
                 const isThisDay = di === planData.dayIdx;
+                const route = CATEGORY_ROUTES[dg.category];
+                const CategoryIcon = CATEGORY_ICONS[dg.category] || Dumbbell;
+
+                const handleClick = () => {
+                  if (route) {
+                    navigate(route);
+                  } else {
+                    toggleDayComplete.mutate({ weekIdx: planData.weekIdx, dayIdx: di });
+                  }
+                };
+
                 return (
                   <div
                     key={di}
-                    onClick={() => toggleDayComplete.mutate({ weekIdx: planData.weekIdx, dayIdx: di })}
+                    onClick={handleClick}
                     className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
                       dg.completed
                         ? "bg-primary/10 border-primary/20"
                         : isThisDay
                         ? "bg-secondary/50 border-primary/30"
                         : "bg-secondary/30 border-border hover:border-primary/30"
-                    }`}
+                    } ${route ? "hover:border-primary/50" : ""}`}
                   >
-                    <div
-                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                        dg.completed ? "bg-primary border-primary" : "border-muted-foreground/30"
-                      }`}
-                    >
-                      {dg.completed && <CheckCircle2 className="w-3 h-3 text-white" />}
-                    </div>
+                    {route ? (
+                      <div className="w-5 h-5 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <ExternalLink className="w-3 h-3 text-primary" />
+                      </div>
+                    ) : (
+                      <div
+                        onClick={(e) => { e.stopPropagation(); toggleDayComplete.mutate({ weekIdx: planData.weekIdx, dayIdx: di }); }}
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                          dg.completed ? "bg-primary border-primary" : "border-muted-foreground/30"
+                        }`}
+                      >
+                        {dg.completed && <CheckCircle2 className="w-3 h-3 text-white" />}
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className={`text-xs font-semibold ${isThisDay ? "text-primary" : ""}`}>
@@ -163,7 +207,15 @@ export default function TrainingPlanner({ profile, dailyLogs = [] }) {
                           <Clock className="w-3 h-3" /> {dg.duration}
                         </span>
                       </div>
-                      <p className="text-sm font-medium mt-0.5">{dg.drill_name}</p>
+                      <p className="text-sm font-medium mt-0.5 flex items-center gap-1.5">
+                        {dg.drill_name}
+                        {route && (
+                          <span className="text-[10px] text-primary flex items-center gap-0.5 shrink-0">
+                            <CategoryIcon className="w-3 h-3" />
+                            Go to {dg.category.charAt(0).toUpperCase() + dg.category.slice(1)}
+                          </span>
+                        )}
+                      </p>
                       <p className="text-xs text-muted-foreground mt-0.5">{dg.goal}</p>
                       <div className="flex items-center gap-3 mt-1">
                         <button
@@ -172,7 +224,7 @@ export default function TrainingPlanner({ profile, dailyLogs = [] }) {
                         >
                           <BookOpen className="w-3 h-3" /> How To
                         </button>
-                        <DrillEquipmentInfo drillName={dg.drill_name} profileId={profile?.id} />
+                        {!route && <DrillEquipmentInfo drillName={dg.drill_name} profileId={profile?.id} />}
                       </div>
                     </div>
                   </div>
@@ -339,6 +391,22 @@ export default function TrainingPlanner({ profile, dailyLogs = [] }) {
           </div>
         </div>
       )}
+
+      {/* Dot Legend */}
+      <div className="flex items-center justify-center gap-4 text-[10px] text-muted-foreground">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-primary" />
+          <span>Scheduled drill</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-green-400" />
+          <span>Completed activity</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-primary/10 ring-1 ring-primary/30" />
+          <span>Selected</span>
+        </div>
+      </div>
 
       {/* Week View */}
       {viewMode === "week" && (
