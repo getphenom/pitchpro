@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import XpBar from "@/components/shared/XpBar";
 import FifaPlayerCard from "@/components/profile/FifaPlayerCard";
+import IdpProgressChart from "@/components/profile/IdpProgressChart";
 import TrophyCase from "@/components/profile/TrophyCase";
 import { POSITION_LABELS, getLevel, LEVEL_TITLES } from "@/lib/gameData";
 import { useTheme } from "@/lib/ThemeProvider";
@@ -101,6 +102,9 @@ export default function Player() {
 
         {/* FIFA Player Card */}
         <FifaPlayerCard />
+
+        {/* IDP Skill Progression Chart */}
+        <IdpProgressChart profile={profile} />
 
         {/* Quick Stats */}
         <div className="grid grid-cols-3 gap-3">
