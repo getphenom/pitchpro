@@ -88,11 +88,12 @@ function generateRoadmapItems(profile, dailyLog) {
     return {
       id: `meal_${type}`,
       title: type.charAt(0).toUpperCase() + type.slice(1),
-      desc: meal?.description || "Not logged yet",
+      desc: meal?.completed ? (meal?.description || "Done ✓") : "Tap to log what you ate",
       xp: i === 0 ? 10 : 5,
       icon: type === "breakfast" ? "🌅" : type === "lunch" ? "🌞" : "🌙",
       done: !!meal?.completed,
       mealType: type,
+      navTo: "/nutrition",
     };
   });
   const mealsDone = mealItems.filter((m) => m.done).length;
@@ -231,10 +232,10 @@ export default function TodaysRoadmap({ profile, dailyLog, onQuestComplete }) {
                     )}
                   </div>
 
-                  {/* Navigate — for training drills */}
-                  {item.drillRef && (
+                  {/* Navigate — for training drills or meal logging */}
+                  {(item.drillRef || item.navTo) && (
                     <button
-                      onClick={() => navigate("/train")}
+                      onClick={() => navigate(item.drillRef ? "/train" : item.navTo)}
                       className="flex-shrink-0 text-muted-foreground/40 hover:text-primary transition-colors"
                     >
                       <ChevronRight className="w-3.5 h-3.5" />
