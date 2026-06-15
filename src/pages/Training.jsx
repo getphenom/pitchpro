@@ -10,10 +10,9 @@ import { getCategoryXp, getCategoryTier, CATEGORY_THRESHOLDS, TIER_LABELS, TIER_
 import { motion } from "framer-motion";
 import PullToRefresh from "@/components/shared/PullToRefresh";
 import TrainingPlanGenerator from "@/components/training/TrainingPlanGenerator";
-import TrainingCalendar from "@/components/training/TrainingCalendar";
+import TrainingPlanner from "@/components/training/TrainingPlanner";
 import TrainingTemplates from "@/components/training/TrainingTemplates";
 import WarmUpGenerator from "@/components/training/WarmUpGenerator";
-import TrainingSchedule from "@/components/training/TrainingSchedule";
 import DrillDetailDialog from "@/components/training/DrillDetailDialog";
 import DrillEquipmentInfo from "@/components/training/DrillEquipmentInfo";
 import EquipmentSummary from "@/components/training/EquipmentSummary";
@@ -252,15 +251,15 @@ export default function Training() {
                 Drills
               </button>
               <button
-                onClick={() => { setViewMode("calendar"); setShowPlan(false); }}
+                onClick={() => { setViewMode("planner"); setShowPlan(false); }}
                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                  viewMode === "calendar"
+                  viewMode === "planner"
                     ? "bg-background text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <Calendar className="w-3.5 h-3.5 inline mr-1" />
-                Calendar
+                Planner
               </button>
               <button
                 onClick={() => { setViewMode("templates"); setShowPlan(false); }}
@@ -283,17 +282,6 @@ export default function Training() {
               >
                 <Timer className="w-3.5 h-3.5 inline mr-1" />
                 Warm-Up
-              </button>
-              <button
-                onClick={() => { setViewMode("schedule"); setShowPlan(false); }}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                  viewMode === "schedule"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Clock className="w-3.5 h-3.5 inline mr-1" />
-                Schedule
               </button>
               <button
                 onClick={() => { setViewMode("tests"); setShowPlan(false); }}
@@ -360,14 +348,12 @@ export default function Training() {
           onSwap={(alt) => { setSelectedDrill(alt); }}
         />
 
-        {viewMode === "calendar" ? (
-          <TrainingCalendar profile={profile} dailyLogs={dailyLogs} />
+        {viewMode === "planner" ? (
+          <TrainingPlanner profile={profile} dailyLogs={dailyLogs} />
         ) : viewMode === "templates" ? (
           <TrainingTemplates profile={profile} trainingCategories={TRAINING_CATEGORIES} level={level} />
         ) : viewMode === "warmup" ? (
           <WarmUpGenerator profile={profile} />
-        ) : viewMode === "schedule" ? (
-          <TrainingSchedule profile={profile} />
         ) : viewMode === "tests" ? (
           <PlayerAssessment profile={profile} />
         ) : viewMode === "log" ? (
