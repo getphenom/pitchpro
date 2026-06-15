@@ -444,7 +444,7 @@ export default function PlayerAssessment({ profile }) {
   return (
     <div className="space-y-5">
       <TestDetailDialog
-        open={!!selectedHistoryTest}
+        open={!!selectedHistoryTest?.test}
         onClose={() => setSelectedHistoryTest(null)}
         test={selectedHistoryTest?.test}
         results={selectedHistoryTest?.testResults || []}
@@ -555,7 +555,8 @@ export default function PlayerAssessment({ profile }) {
                       <div
                         key={r.id}
                         onClick={() => {
-                          if (testDef) setSelectedHistoryTest({ test: testDef, testResults: results.filter((rr) => rr.test_id === r.test_id) });
+                          if (!testDef) return;
+                          setSelectedHistoryTest({ test: testDef, testResults: results.filter((rr) => rr.test_id === r.test_id) });
                         }}
                         className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border hover:border-primary/30 cursor-pointer transition-all group"
                       >

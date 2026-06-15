@@ -56,7 +56,7 @@ export default function TestDetailDialog({ open, onClose, test, results = [], on
     onClose();
   };
 
-  if (!open) return null;
+  if (!open || !test) return null;
 
   const TestIcon = test.icon || Dumbbell;
 
