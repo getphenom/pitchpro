@@ -6,9 +6,9 @@ import QuickLogWidget from "@/components/shared/QuickLogWidget";
 const NAV_ITEMS = [
   { path: "/", icon: Home, label: "Home" },
   { path: "/train", icon: Dumbbell, label: "Train" },
+  { path: "/player", icon: Zap, label: "Player" },
   { path: "/nutrition", icon: UtensilsCrossed, label: "Fuel" },
   { path: "/mental", icon: Brain, label: "Mind" },
-  { path: "/player", icon: Zap, label: "Player" },
 ];
 
 export default function AppLayout() {
