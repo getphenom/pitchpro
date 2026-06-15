@@ -10,7 +10,7 @@ const NAV_ITEMS = [
   { path: "/nutrition", icon: UtensilsCrossed, label: "Fuel" },
   { path: "/mental", icon: Brain, label: "Mind" },
   { path: "/tactics", icon: Map, label: "Tactics" },
-  { path: "/development", icon: Target, label: "IDP" },
+  { path: "/development", icon: Target, label: "IDP/LTDP" },
   { path: "/recovery", icon: Timer, label: "Recover" },
   { path: "/monthly", icon: BarChart3, label: "Monthly" },
   { path: "/profile", icon: User, label: "Profile" },
