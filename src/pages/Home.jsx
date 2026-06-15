@@ -15,6 +15,7 @@ import ReadinessScore from "@/components/home/ReadinessScore";
 import WeeklySummary from "@/components/home/WeeklySummary";
 import DashboardCharts from "@/components/home/DashboardCharts";
 import IdpSkillChart from "@/components/home/IdpSkillChart";
+import GapDrillsHighlights from "@/components/home/GapDrillsHighlights";
 import { POSITION_LABELS, BADGES, getLevel, LEVEL_TITLES } from "@/lib/gameData";
 import { checkBadges } from "@/lib/badgeChecker";
 import { getCategoryBadge, getBadgeById } from "@/lib/categoryProgression";
@@ -365,6 +366,14 @@ export default function Home() {
               transition={{ delay: 0.3 }}
             >
               <IdpSkillChart profile={profile} />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.32 }}
+            >
+              <GapDrillsHighlights profile={profile} />
             </motion.div>
 
             <motion.div
