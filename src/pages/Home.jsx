@@ -18,7 +18,7 @@ import { POSITION_LABELS, BADGES, getLevel, LEVEL_TITLES } from "@/lib/gameData"
 import { checkBadges } from "@/lib/badgeChecker";
 import { getCategoryBadge, getBadgeById } from "@/lib/categoryProgression";
 import CategoryProgression from "@/components/shared/CategoryProgression";
-import { Loader2, Trophy, TrendingUp, Sparkles, LayoutDashboard, ListChecks } from "lucide-react";
+import { Loader2, Trophy, TrendingUp, Sparkles, LayoutDashboard, ListChecks, CalendarPlus } from "lucide-react";
 import { motion } from "framer-motion";
 import PullToRefresh from "@/components/shared/PullToRefresh";
 import PainPatternAlert from "@/components/injury/PainPatternAlert";
@@ -168,6 +168,25 @@ export default function Home() {
     await updateProfile.mutateAsync(updatedProfile);
   };
 
+  const [exporting, setExporting] = useState(false);
+
+  const handleExportCalendar = async () => {
+    setExporting(true);
+    try {
+      const response = await base44.functions.invoke("exportCalendarEvents", {}, { responseType: "blob" });
+      const blob = new Blob([response.data], { type: "text/calendar;charset=utf-8" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `soccer-quests-${today}.ics`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      // silent
+    }
+    setExporting(false);
+  };
+
   const handleWaterUpdate = async (ml) => {
     await updateLog.mutateAsync({ water_ml: ml });
   };
@@ -217,8 +236,19 @@ export default function Home() {
               {POSITION_LABELS[profile.position]} · {title}
             </p>
           </div>
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center border border-primary/20">
-            <span className="font-heading font-bold text-xl text-primary">{level}</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleExportCalendar}
+              disabled={exporting}
+              className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-primary transition-colors bg-secondary/50 hover:bg-secondary rounded-lg px-2.5 py-1.5"
+              title="Export today's quests to your calendar"
+            >
+              <CalendarPlus className={`w-3.5 h-3.5 ${exporting ? 'animate-spin' : ''}`} />
+              Export
+            </button>
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center border border-primary/20">
+              <span className="font-heading font-bold text-xl text-primary">{level}</span>
+            </div>
           </div>
         </motion.div>
 
