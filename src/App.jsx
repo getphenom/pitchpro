@@ -14,12 +14,14 @@ import ResetPassword from "@/pages/ResetPassword";
 
 import AppLayout from "@/components/layout/AppLayout";
 import Home from "@/pages/Home";
+import Train from "@/pages/Train";
 import Training from "@/pages/Training";
 import Nutrition from "@/pages/Nutrition";
 import Mental from "@/pages/Mental";
 import Tactics from "@/pages/Tactics";
 import Tasks from "@/pages/Tasks";
 import Profile from "@/pages/Profile";
+import Player from "@/pages/Player";
 import Injury from "@/pages/Injury";
 import Development from "@/pages/Development";
 import Recovery from "@/pages/Recovery";
@@ -62,9 +64,11 @@ const AuthenticatedApp = () => {
         <Route path="/onboarding" element={<Onboarding />} />
         <Route element={<AppLayout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/train" element={<Train />} />
           <Route path="/training" element={<Training />} />
           <Route path="/nutrition" element={<Nutrition />} />
           <Route path="/mental" element={<Mental />} />
+          <Route path="/player" element={<Player />} />
           <Route path="/tactics" element={<Tactics />} />
           <Route path="/tasks" element={<Tasks />} />
           <Route path="/profile" element={<Profile />} />
