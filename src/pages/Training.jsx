@@ -150,6 +150,7 @@ export default function Training() {
   const [selectedDrill, setSelectedDrill] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("technical");
   const [showFavorites, setShowFavorites] = useState(false);
+  const [showMyLevel, setShowMyLevel] = useState(false);
   const [drillSearch, setDrillSearch] = useState("");
   const queryClient = useQueryClient();
 
@@ -374,25 +375,39 @@ export default function Training() {
               )}
             </div>
             
-            {/* Favorites toggle */}
+            {/* Filters: My Level + Favorites */}
             <div className="flex items-center justify-between">
-              <div className="flex rounded-lg bg-secondary p-0.5">
+              <div className="flex gap-2">
                 <button
-                  onClick={() => setShowFavorites(false)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                    !showFavorites ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  onClick={() => { setShowMyLevel(!showMyLevel); setShowFavorites(false); }}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${
+                    showMyLevel
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "bg-secondary text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  All Drills
+                  <Target className="w-3 h-3" />
+                  My Level
+                  <span className="text-[10px] opacity-70">({level})</span>
                 </button>
-                <button
-                  onClick={() => setShowFavorites(true)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1 ${
-                    showFavorites ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Star className={`w-3 h-3 ${showFavorites ? "fill-accent text-accent" : ""}`} /> Favorites
-                </button>
+                <div className="flex rounded-lg bg-secondary p-0.5">
+                  <button
+                    onClick={() => setShowFavorites(false)}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                      !showFavorites ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    All Drills
+                  </button>
+                  <button
+                    onClick={() => { setShowFavorites(true); setShowMyLevel(false); }}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1 ${
+                      showFavorites ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Star className={`w-3 h-3 ${showFavorites ? "fill-accent text-accent" : ""}`} /> Favorites
+                  </button>
+                </div>
               </div>
               {showFavorites && (
                 <span className="text-[10px] text-muted-foreground">
@@ -410,6 +425,7 @@ export default function Training() {
                     const unlockedIdx = getUnlockedLevelIndex(catKey);
                     const unlockedLevels = UNLOCKED_LEVELS.slice(0, unlockedIdx + 1);
                     unlockedLevels.forEach((lvl) => {
+                      if (showMyLevel && lvl !== level) return;
                       (cat.drills[lvl] || []).forEach((drill) => {
                         if (profile?.favorite_drills?.includes(drill.name)) {
                           allDrills.push({ drill, category: catKey });
@@ -466,9 +482,10 @@ export default function Training() {
                   const unlockedIndex = getUnlockedLevelIndex(key);
                   const unlockedLevels = UNLOCKED_LEVELS.slice(0, unlockedIndex + 1);
                   
-                  // Collect all drills from unlocked levels
+                  // Collect all drills from unlocked levels (or just my level)
                   const allUnlocked = [];
                   unlockedLevels.forEach((lvl) => {
+                    if (showMyLevel && lvl !== level) return;
                     (cat.drills[lvl] || []).forEach((d) => allUnlocked.push({ ...d, _level: lvl }));
                   });
 
@@ -479,7 +496,7 @@ export default function Training() {
                         <div>
                           <h3 className="font-semibold text-sm">{cat.label} Training</h3>
                           <p className="text-xs text-muted-foreground mt-1">
-                            {allUnlocked.length} drills unlocked
+                            {showMyLevel ? `${allUnlocked.length} ${level}-level drills` : `${allUnlocked.length} drills unlocked`}
                           </p>
                         </div>
                         <div className="flex items-center gap-1">
