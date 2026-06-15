@@ -18,6 +18,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import InjuryTrainingNotes from "@/components/injury/InjuryTrainingNotes";
 import PainPatternAlert from "@/components/injury/PainPatternAlert";
+import RecoveryPainChart from "@/components/recovery/RecoveryPainChart";
 
 const BODY_PARTS = [
   "ankle", "knee", "hamstring", "quad", "groin", "hip",
@@ -428,6 +429,9 @@ export default function Injury() {
             })}
           </motion.div>
         )}
+
+        {/* 30-Day Pain Trend Chart */}
+        <RecoveryPainChart profileId={profile?.id} />
 
         {/* Training Notes History */}
         <InjuryTrainingNotes profile={profile} />
