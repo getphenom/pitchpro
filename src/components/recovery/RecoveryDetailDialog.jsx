@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BookOpen, Loader2, Play } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import SwappableDetailDialog from "@/components/shared/SwappableDetailDialog";
+import { RECOVERY_IMAGES } from "@/lib/exerciseImages";
 
 export default function RecoveryDetailDialog({ open, onClose, exercise, profile, allExercises = [], onSwap }) {
   const [showGuide, setShowGuide] = useState(false);
@@ -84,6 +85,11 @@ Write for a young athlete (age 10-18). Keep it simple and actionable.`,
         </div>
       }
     >
+      {RECOVERY_IMAGES[exercise.name] && (
+        <div className="w-full h-40 rounded-lg overflow-hidden -mt-1">
+          <img src={RECOVERY_IMAGES[exercise.name]} alt={exercise.name} className="w-full h-full object-cover" />
+        </div>
+      )}
       <p className="text-sm text-muted-foreground leading-relaxed">Duration: {exercise.duration} · Target: {exercise.target}</p>
 
       <AnimatePresence>

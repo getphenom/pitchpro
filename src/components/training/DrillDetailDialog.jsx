@@ -5,6 +5,7 @@ import { Flame, Clock, Play, Image, ExternalLink, BookOpen, ChevronDown, Chevron
 import { motion, AnimatePresence } from "framer-motion";
 import SwappableDetailDialog from "@/components/shared/SwappableDetailDialog";
 import DrillEquipmentInfo from "@/components/training/DrillEquipmentInfo";
+import { DRILL_IMAGES } from "@/lib/exerciseImages";
 
 const CATEGORY_ICONS = { technical: "⚽", physical: "💪", tactical: "📋" };
 
@@ -182,6 +183,11 @@ Return 3-4 high-quality resources with YouTube search queries, channel names, an
         </div>
       }
     >
+      {DRILL_IMAGES[drill.name] && (
+        <div className="w-full h-40 rounded-lg overflow-hidden -mt-1">
+          <img src={DRILL_IMAGES[drill.name]} alt={drill.name} className="w-full h-full object-cover" />
+        </div>
+      )}
       <p className="text-sm text-muted-foreground leading-relaxed">{drill.desc}</p>
 
       <div className="flex items-center gap-3 text-xs">

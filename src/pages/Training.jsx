@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { POSITION_LABELS, getLevel } from "@/lib/gameData";
 import { getCategoryXp, getCategoryTier, CATEGORY_THRESHOLDS, TIER_LABELS, TIER_ICONS } from "@/lib/categoryProgression";
 import { motion } from "framer-motion";
+import { DRILL_IMAGES, CATEGORY_COVERS } from "@/lib/exerciseImages";
 import PullToRefresh from "@/components/shared/PullToRefresh";
 import TrainingPlanGenerator from "@/components/training/TrainingPlanGenerator";
 import TrainingPlanner from "@/components/training/TrainingPlanner";
@@ -104,40 +105,48 @@ const TRAINING_CATEGORIES = {
 };
 
 function DrillCard({ drill, index, onSelect, profile, favorites, focusMode }) {
+  const image = DRILL_IMAGES[drill.name];
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
       onClick={() => onSelect?.(drill)}
-      className="p-4 rounded-xl bg-card border border-border hover:border-primary/30 transition-all cursor-pointer group relative"
+      className="rounded-xl bg-card border border-border hover:border-primary/30 transition-all cursor-pointer group relative overflow-hidden"
     >
       {favorites?.includes(drill.name) && (
-        <Star className="w-3.5 h-3.5 text-accent fill-accent absolute top-3 right-3" />
+        <Star className="w-3.5 h-3.5 text-accent fill-accent absolute top-3 right-3 z-10" />
       )}
-      <div className="flex items-start gap-4 mb-2">
-        <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0 mt-0.5">
-          <Zap className="w-5 h-5 text-primary" />
+      {image && (
+        <div className="w-full h-28 overflow-hidden">
+          <img src={image} alt={drill.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
         </div>
-        <div className="flex-1 min-w-0">
-          <h4 className="font-semibold text-sm">{drill.name}</h4>
-          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{drill.desc}</p>
-          <span className="text-[10px] text-muted-foreground mt-1 group-hover:text-primary transition-colors inline-flex items-center gap-0.5">
-            <BookOpen className="w-3 h-3" /> Tap for details
-          </span>
-        </div>
-        <div className="flex flex-col items-end gap-1 flex-shrink-0">
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Clock className="w-3 h-3" />
-            {drill.duration}
+      )}
+      <div className="p-4">
+        <div className="flex items-start gap-4 mb-2">
+          <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
+            <Zap className="w-5 h-5 text-primary" />
           </div>
-          <div className="flex items-center gap-1 text-xs text-accent font-semibold">
-            <Flame className="w-3 h-3" />
-            {drill.xp} XP
+          <div className="flex-1 min-w-0">
+            <h4 className="font-semibold text-sm">{drill.name}</h4>
+            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{drill.desc}</p>
+            <span className="text-[10px] text-muted-foreground mt-1 group-hover:text-primary transition-colors inline-flex items-center gap-0.5">
+              <BookOpen className="w-3 h-3" /> Tap for details
+            </span>
+          </div>
+          <div className="flex flex-col items-end gap-1 flex-shrink-0">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Clock className="w-3 h-3" />
+              {drill.duration}
+            </div>
+            <div className="flex items-center gap-1 text-xs text-accent font-semibold">
+              <Flame className="w-3 h-3" />
+              {drill.xp} XP
+            </div>
           </div>
         </div>
+        {!focusMode && <DrillEquipmentInfo drillName={drill.name} profileId={profile?.id} />}
       </div>
-      {!focusMode && <DrillEquipmentInfo drillName={drill.name} profileId={profile?.id} />}
     </motion.div>
   );
 }

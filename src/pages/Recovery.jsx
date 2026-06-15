@@ -5,6 +5,7 @@ import { Loader2, Sparkles, Bed, Dumbbell, Wind, Thermometer, Droplets, Timer, C
 import { Button } from "@/components/ui/button";
 import { POSITION_LABELS } from "@/lib/gameData";
 import { motion, AnimatePresence } from "framer-motion";
+import { RECOVERY_IMAGES } from "@/lib/exerciseImages";
 import RecoveryDetailDialog from "@/components/recovery/RecoveryDetailDialog";
 import RecoveryTrainingNotes from "@/components/recovery/RecoveryTrainingNotes";
 import RecoveryPainChart from "@/components/recovery/RecoveryPainChart";
@@ -483,38 +484,46 @@ Create a plan with:
                         {cat.exercises.map((ex, ei) => {
                           const key = `${ci}-${ei}`;
                           const done = completedExercises[key];
+                          const image = RECOVERY_IMAGES[ex.name];
                           return (
                             <div
                               key={ei}
-                              className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer group ${
+                              className={`flex items-center gap-3 rounded-lg border transition-all cursor-pointer group overflow-hidden ${
                                 done
                                   ? "bg-teal-500/10 border-teal-500/20"
                                   : "bg-secondary/30 border-border hover:border-teal-500/30"
                               }`}
                             >
-                              <div
-                                onClick={() => toggleExercise(ci, ei)}
-                                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 cursor-pointer ${
-                                  done ? "bg-teal-500 border-teal-500" : "border-muted-foreground/30"
-                                }`}
-                              >
-                                {done && <CheckCircle2 className="w-3 h-3 text-white" />}
-                              </div>
-                              <div
-                                onClick={() => { setSelectedExercise(ex); setCurrentCategoryExercises(cat.exercises); }}
-                                className="flex-1 min-w-0"
-                              >
-                                <p className={`text-sm ${done ? "line-through text-muted-foreground" : "font-medium"}`}>
-                                  {ex.name}
-                                </p>
-                                <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                                  <Timer className="w-3 h-3" /> {ex.duration}
-                                  <span>·</span>
-                                  <Footprints className="w-3 h-3" /> {ex.target}
+                              {image && (
+                                <div className="w-16 h-14 flex-shrink-0 overflow-hidden rounded-l-lg">
+                                  <img src={image} alt={ex.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" loading="lazy" />
                                 </div>
-                                <span className="text-[10px] text-muted-foreground mt-0.5 group-hover:text-teal-400 transition-colors inline-flex items-center gap-0.5">
-                                  <BookOpen className="w-3 h-3" /> Tap for tutorial
-                                </span>
+                              )}
+                              <div className="flex items-center gap-3 p-3 flex-1 min-w-0">
+                                <div
+                                  onClick={() => toggleExercise(ci, ei)}
+                                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 cursor-pointer ${
+                                    done ? "bg-teal-500 border-teal-500" : "border-muted-foreground/30"
+                                  }`}
+                                >
+                                  {done && <CheckCircle2 className="w-3 h-3 text-white" />}
+                                </div>
+                                <div
+                                  onClick={() => { setSelectedExercise(ex); setCurrentCategoryExercises(cat.exercises); }}
+                                  className="flex-1 min-w-0"
+                                >
+                                  <p className={`text-sm ${done ? "line-through text-muted-foreground" : "font-medium"}`}>
+                                    {ex.name}
+                                  </p>
+                                  <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                                    <Timer className="w-3 h-3" /> {ex.duration}
+                                    <span>·</span>
+                                    <Footprints className="w-3 h-3" /> {ex.target}
+                                  </div>
+                                  <span className="text-[10px] text-muted-foreground mt-0.5 group-hover:text-teal-400 transition-colors inline-flex items-center gap-0.5">
+                                    <BookOpen className="w-3 h-3" /> Tap for tutorial
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           );
