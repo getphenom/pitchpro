@@ -32,29 +32,25 @@ export default function Profile() {
   const profile = profiles?.[0];
 
   const updateProfile = useMutation({
-    mutationFn: (data) => base44.entities.PlayerProfile.update(profile.id, data),
+    mutationFn: (data) => base44.entities.PlayerProfile.update(profile?.id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profiles"] });
       setEditing(false);
     },
   });
 
-  const cmHeight = profile.height_cm || 0;
-  const displayFt = Math.floor(cmHeight / 30.48);
-  const displayIn = Math.round((cmHeight % 30.48) / 2.54);
-  const displayLbs = profile.weight_kg ? Math.round(profile.weight_kg / 0.453592) : null;
-
   const handleEdit = () => {
+    const cm = profile?.height_cm || 0;
     setEditData({
-      player_name: profile.player_name,
-      age: profile.age,
-      position: profile.position,
-      skill_level: profile.skill_level,
-      height_ft: cmHeight ? String(Math.floor(cmHeight / 30.48)) : "",
-      height_in: cmHeight ? String(Math.round((cmHeight % 30.48) / 2.54)) : "",
-      weight_lbs: profile.weight_kg ? String(Math.round(profile.weight_kg / 0.453592)) : "",
-      preferred_foot: profile.preferred_foot || "right",
-      weekly_training_days: profile.weekly_training_days || 5,
+      player_name: profile?.player_name,
+      age: profile?.age,
+      position: profile?.position,
+      skill_level: profile?.skill_level,
+      height_ft: cm ? String(Math.floor(cm / 30.48)) : "",
+      height_in: cm ? String(Math.round((cm % 30.48) / 2.54)) : "",
+      weight_lbs: profile?.weight_kg ? String(Math.round(profile.weight_kg / 0.453592)) : "",
+      preferred_foot: profile?.preferred_foot || "right",
+      weekly_training_days: profile?.weekly_training_days || 5,
     });
     setEditing(true);
   };
@@ -82,6 +78,11 @@ export default function Profile() {
   }
 
   if (!profile) return null;
+
+  const cmHeight = profile.height_cm || 0;
+  const displayFt = Math.floor(cmHeight / 30.48);
+  const displayIn = Math.round((cmHeight % 30.48) / 2.54);
+  const displayLbs = profile.weight_kg ? Math.round(profile.weight_kg / 0.453592) : null;
 
   const level = getLevel(profile.xp || 0);
   const title = LEVEL_TITLES[level - 1] || "Legend";
