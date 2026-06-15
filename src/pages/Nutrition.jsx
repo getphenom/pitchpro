@@ -10,6 +10,7 @@ import NutritionCoachChat from "@/components/agents/NutritionCoachChat";
 import NutritionVsTraining from "@/components/nutrition/NutritionVsTraining";
 import DailyMacroLogger from "@/components/nutrition/DailyMacroLogger";
 import MacroChart from "@/components/nutrition/MacroChart";
+import { MEAL_IMAGES } from "@/lib/exerciseImages";
 
 // ─── Timing contexts with nutrition + hydration for each ───
 const TIMING_CONTEXTS = {
@@ -148,15 +149,21 @@ const HYDRATION_DATA = {
 
 // ─── Components ───
 function NutritionCard({ meal, index, onSelect }) {
+  const img = MEAL_IMAGES[meal.name];
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04 }}
       onClick={() => onSelect(meal)}
-      className="rounded-xl bg-card border border-border p-3.5 cursor-pointer hover:border-primary/30 transition-all group"
+      className="rounded-xl bg-card border border-border overflow-hidden cursor-pointer hover:border-primary/30 transition-all group"
     >
-      <div className="flex items-start gap-3">
+      {img && (
+        <div className="h-28 overflow-hidden">
+          <img src={img} alt={meal.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        </div>
+      )}
+      <div className={`flex items-start gap-3 ${img ? 'p-3' : 'p-3.5'}`}>
         <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
           <Apple className="w-4 h-4 text-primary" />
         </div>

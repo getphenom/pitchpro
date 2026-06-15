@@ -91,3 +91,25 @@ export const CATEGORY_COVERS = {
   sleep: IMG("1541781774459-f6a3e0b0e5c5"),
   contrast: IMG("1560089000-1b5a7e8c5ea6"),
 };
+
+export const MEAL_IMAGES = {
+  "Banana & Honey Toast": IMG("1606914505312-9ef13c3c55c1"),
+  "Oatmeal Power Bowl": IMG("1517673132405-1f7ceb6ed8c2"),
+  "Rice Cakes & Nut Butter": IMG("1505252585461-04db1eb84625"),
+  "Energy Bar": IMG("1622485830992-4d3e6a3b5b7c"),
+  "Scrambled Eggs & Toast": IMG("1482049016688-2d3e1e99a09b"),
+  "Chicken & Rice Bowl": IMG("1546069901-ba7e02a7c8d8"),
+  "Turkey & Cheese Sandwich": IMG("1528735600980-e6db7f1e1d3e"),
+  "Salmon & Sweet Potato": IMG("1467003909585-2f8a72700288"),
+  "Stir-Fry Chicken & Veggies": IMG("1543353071-de9aefd3b7ec"),
+  "Chocolate Milk Recovery": IMG("1550583726-2ef6eec6a60a"),
+  "Egg & Avocado Wrap": IMG("1505944094186-5f4b9a9a5b91"),
+  "Bagel with Peanut Butter": IMG("1588117260148-bd0a0ef55b0c"),
+  "Pasta with Light Sauce": IMG("1551183053-bf91a1d81141"),
+  "Banana & Sports Drink": IMG("1571771894821-08bac1d5a6d2"),
+  "Pasta with Meat Sauce": IMG("1608897013039-886e0b9b3f39"),
+  "Trail Mix Power Pack": IMG("1590779033128-7c2a6f0d4c0c"),
+  "Cheese & Crackers": IMG("1601311473531-f0b3e5c2f9b3"),
+  "Orange Slices": IMG("1587735243619-0b8ef5e4c1ce"),
+  "Energy Gel / Gummies": IMG("1599490650006-7c08f7b31e73"),
+};

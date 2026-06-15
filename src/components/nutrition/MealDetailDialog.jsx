@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BookOpen, Loader2, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import SwappableDetailDialog from "@/components/shared/SwappableDetailDialog";
+import { MEAL_IMAGES } from "@/lib/exerciseImages";
 
 export default function MealDetailDialog({ open, onClose, meal, profile, allMeals = [], onSwap }) {
   const [showRecipe, setShowRecipe] = useState(false);
@@ -84,6 +85,11 @@ Keep instructions simple and practical — a ${profile?.age || "teenage"}-year-o
         </div>
       }
     >
+      {MEAL_IMAGES[meal.name] && (
+        <div className="w-full h-40 rounded-lg overflow-hidden -mt-1">
+          <img src={MEAL_IMAGES[meal.name]} alt={meal.name} className="w-full h-full object-cover" />
+        </div>
+      )}
       {(meal.desc || meal.note) && <p className="text-sm text-muted-foreground leading-relaxed">{meal.desc || meal.note}</p>}
 
       <div className="flex items-center gap-3 text-xs">
