@@ -30,6 +30,9 @@ import CalendarPage from "@/pages/Calendar";
 import Insights from "@/pages/Insights";
 import Onboarding from "@/pages/Onboarding";
 import Assessment from "@/pages/Assessment";
+import Fuel from "@/pages/Fuel";
+import MindHub from "@/pages/MindHub";
+import You from "@/pages/You";
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -79,6 +82,9 @@ const AuthenticatedApp = () => {
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/insights" element={<Insights />} />
           <Route path="/assessment" element={<Assessment />} />
+          <Route path="/fuel" element={<Fuel />} />
+          <Route path="/mind-hub" element={<MindHub />} />
+          <Route path="/you" element={<You />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />
