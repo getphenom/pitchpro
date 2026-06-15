@@ -104,8 +104,17 @@ const TRAINING_CATEGORIES = {
   },
 };
 
+const LEVEL_COLORS = {
+  beginner: { bg: "bg-emerald-500/10", text: "text-emerald-400", border: "border-emerald-500/20", label: "Beginner" },
+  intermediate: { bg: "bg-blue-500/10", text: "text-blue-400", border: "border-blue-500/20", label: "Intermediate" },
+  advanced: { bg: "bg-purple-500/10", text: "text-purple-400", border: "border-purple-500/20", label: "Advanced" },
+  elite: { bg: "bg-amber-500/10", text: "text-amber-400", border: "border-amber-500/20", label: "Elite" },
+};
+
 function DrillCard({ drill, index, onSelect, profile, favorites, focusMode }) {
   const image = DRILL_IMAGES[drill.name];
+  const lvl = drill._level || "beginner";
+  const lc = LEVEL_COLORS[lvl] || LEVEL_COLORS.beginner;
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -123,12 +132,17 @@ function DrillCard({ drill, index, onSelect, profile, favorites, focusMode }) {
         </div>
       )}
       <div className="p-4">
-        <div className="flex items-start gap-4 mb-2">
+        <div className="flex items-start gap-3 mb-2">
           <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
             <Zap className="w-5 h-5 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-sm">{drill.name}</h4>
+            <div className="flex items-center gap-2">
+              <h4 className="font-semibold text-sm">{drill.name}</h4>
+              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md ${lc.bg} ${lc.text} ${lc.border} border`}>
+                {lc.label}
+              </span>
+            </div>
             <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{drill.desc}</p>
             <span className="text-[10px] text-muted-foreground mt-1 group-hover:text-primary transition-colors inline-flex items-center gap-0.5">
               <BookOpen className="w-3 h-3" /> Tap for details
@@ -160,7 +174,7 @@ export default function Training() {
   const [selectedDrill, setSelectedDrill] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("technical");
   const [showFavorites, setShowFavorites] = useState(false);
-  const [showMyLevel, setShowMyLevel] = useState(false);
+  const [showMyLevel, setShowMyLevel] = useState(false); // false = all, or "beginner"/"intermediate"/etc.
   const [drillSearch, setDrillSearch] = useState("");
   const [focusMode, setFocusMode] = useState(false);
   const queryClient = useQueryClient();
@@ -394,44 +408,54 @@ export default function Training() {
               )}
             </div>
             
-            {/* Filters: My Level + Favorites */}
-            <div className="flex items-center justify-between">
-              <div className="flex gap-2">
+            {/* Filters: Difficulty Level + Favorites */}
+            <div className="space-y-2">
+              {/* Level filter pills */}
+              <div className="flex flex-wrap gap-1.5">
                 <button
-                  onClick={() => { setShowMyLevel(!showMyLevel); setShowFavorites(false); }}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${
-                    showMyLevel
-                      ? "bg-primary text-primary-foreground shadow-sm"
+                  onClick={() => { setShowMyLevel(false); setShowFavorites(false); }}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                    !showMyLevel && !showFavorites
+                      ? "bg-foreground text-background shadow-sm"
                       : "bg-secondary text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  <Target className="w-3 h-3" />
-                  My Level
-                  <span className="text-[10px] opacity-70">({level})</span>
+                  All Levels
                 </button>
-                <div className="flex rounded-lg bg-secondary p-0.5">
-                  <button
-                    onClick={() => setShowFavorites(false)}
-                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                      !showFavorites ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    All Drills
-                  </button>
-                  <button
-                    onClick={() => { setShowFavorites(true); setShowMyLevel(false); }}
-                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1 ${
-                      showFavorites ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Star className={`w-3 h-3 ${showFavorites ? "fill-accent text-accent" : ""}`} /> Favorites
-                  </button>
-                </div>
+                {["beginner", "intermediate", "advanced", "elite"].map((lvl) => {
+                  const lc = LEVEL_COLORS[lvl];
+                  const isMyLevel = lvl === level;
+                  return (
+                    <button
+                      key={lvl}
+                      onClick={() => { setShowMyLevel(lvl); setShowFavorites(false); }}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1 ${
+                        showMyLevel === lvl
+                          ? `${lc.bg} ${lc.text} ${lc.border} border`
+                          : "bg-secondary text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {lc.label}
+                      {isMyLevel && <span className="text-[10px] opacity-60">· you</span>}
+                    </button>
+                  );
+                })}
+                <button
+                  onClick={() => { setShowFavorites(true); setShowMyLevel(false); }}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1 ${
+                    showFavorites
+                      ? "bg-accent text-accent-foreground shadow-sm"
+                      : "bg-secondary text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Star className={`w-3 h-3 ${showFavorites ? "fill-accent-foreground" : ""}`} />
+                  Saved
+                </button>
               </div>
               {showFavorites && (
-                <span className="text-[10px] text-muted-foreground">
+                <p className="text-[10px] text-muted-foreground">
                   {(profile?.favorite_drills || []).length} saved
-                </span>
+                </p>
               )}
             </div>
 
@@ -444,7 +468,7 @@ export default function Training() {
                     const unlockedIdx = getUnlockedLevelIndex(catKey);
                     const unlockedLevels = UNLOCKED_LEVELS.slice(0, unlockedIdx + 1);
                     unlockedLevels.forEach((lvl) => {
-                      if (showMyLevel && lvl !== level) return;
+                      if (showMyLevel && lvl !== showMyLevel) return;
                       (cat.drills[lvl] || []).forEach((drill) => {
                         if (profile?.favorite_drills?.includes(drill.name)) {
                           allDrills.push({ drill, category: catKey });
@@ -505,7 +529,7 @@ export default function Training() {
                   // Collect all drills from unlocked levels (or just my level)
                   const allUnlocked = [];
                   unlockedLevels.forEach((lvl) => {
-                    if (showMyLevel && lvl !== level) return;
+                    if (showMyLevel && lvl !== showMyLevel) return;
                     (cat.drills[lvl] || []).forEach((d) => allUnlocked.push({ ...d, _level: lvl }));
                   });
 
@@ -517,7 +541,7 @@ export default function Training() {
                           <div>
                             <h3 className="font-semibold text-sm">{cat.label} Training</h3>
                             <p className="text-xs text-muted-foreground mt-1">
-                              {showMyLevel ? `${allUnlocked.length} ${level}-level drills` : `${allUnlocked.length} drills unlocked`}
+                              {showMyLevel ? `${allUnlocked.length} ${(LEVEL_COLORS[showMyLevel] || {}).label || showMyLevel}-level drills` : `${allUnlocked.length} drills unlocked`}
                             </p>
                           </div>
                           <div className="flex items-center gap-1">
