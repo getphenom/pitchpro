@@ -21,6 +21,7 @@ import MaintenanceTracker from "@/components/equipment/MaintenanceTracker";
 import FitnessTrainerChat from "@/components/agents/FitnessTrainerChat";
 import PlayerAssessment from "@/components/training/PlayerAssessment";
 import TrainingLog from "@/components/training/TrainingLog";
+import SessionGearChecklist from "@/components/training/SessionGearChecklist";
 
 const TRAINING_CATEGORIES = {
   technical: {
@@ -357,6 +358,7 @@ export default function Training() {
           <>
             <EquipmentSummary profileId={profile?.id} />
             <MaintenanceTracker profile={profile} />
+            <SessionGearChecklist profile={profile} />
             
             {/* Drill Search */}
             <div className="relative">
