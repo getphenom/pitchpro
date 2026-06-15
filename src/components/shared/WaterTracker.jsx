@@ -35,6 +35,19 @@ export default function WaterTracker({ currentMl = 0, age = 15, weight = 60, onU
         {currentMl} / {goal} ml
       </p>
 
+      {/* Quick-log preset buttons */}
+      <div className="flex items-center gap-2 mb-3">
+        {[150, 250, 500, 750].map((ml) => (
+          <button
+            key={ml}
+            onClick={() => onUpdate?.(currentMl + ml)}
+            className="flex-1 py-2 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/20 hover:border-blue-400/40 transition-all text-xs font-semibold text-blue-400"
+          >
+            +{ml}ml
+          </button>
+        ))}
+      </div>
+
       <div className="flex items-center justify-center gap-3">
         <Button
           size="sm"
