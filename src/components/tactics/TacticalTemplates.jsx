@@ -43,7 +43,7 @@ export default function TacticalTemplates({ profile, tacticalLibrary }) {
 
   const allDrills = [];
   Object.entries(tacticalLibrary || {}).forEach(([catKey, cat]) => {
-    (cat.drills || []).forEach((drill) => {
+    Object.values(cat.drills || {}).flat().forEach((drill) => {
       allDrills.push({ ...drill, category: catKey });
     });
   });
