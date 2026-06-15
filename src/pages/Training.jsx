@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, startOfWeek } from "date-fns";
-import { Loader2, Dumbbell, Clock, Flame, Calendar, ChevronRight, Zap, Target, Shield, Footprints, Save, Timer, BookOpen, ClipboardList, Star, Edit3, Search, X } from "lucide-react";
+import { Loader2, Dumbbell, Clock, Flame, Calendar, ChevronRight, Zap, Target, Shield, Footprints, Save, Timer, BookOpen, ClipboardList, Star, Edit3, Search, X, EyeOff, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { POSITION_LABELS, getLevel } from "@/lib/gameData";
@@ -103,7 +103,7 @@ const TRAINING_CATEGORIES = {
   },
 };
 
-function DrillCard({ drill, index, onSelect, profile, favorites }) {
+function DrillCard({ drill, index, onSelect, profile, favorites, focusMode }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -137,7 +137,7 @@ function DrillCard({ drill, index, onSelect, profile, favorites }) {
           </div>
         </div>
       </div>
-      <DrillEquipmentInfo drillName={drill.name} profileId={profile?.id} />
+      {!focusMode && <DrillEquipmentInfo drillName={drill.name} profileId={profile?.id} />}
     </motion.div>
   );
 }
@@ -153,6 +153,7 @@ export default function Training() {
   const [showFavorites, setShowFavorites] = useState(false);
   const [showMyLevel, setShowMyLevel] = useState(false);
   const [drillSearch, setDrillSearch] = useState("");
+  const [focusMode, setFocusMode] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: profiles, isLoading } = useQuery({
@@ -318,17 +319,36 @@ export default function Training() {
               </button>
             </div>
             {viewMode === "drills" && (
-              <Button
-                variant={showPlan ? "outline" : "default"}
-                className={showPlan ? "" : "bg-primary hover:bg-primary/90"}
-                size="sm"
-                onClick={() => setShowPlan(!showPlan)}
-              >
-                {showPlan ? "Back" : "⚡ AI Plan"}
-              </Button>
+              <>
+                <Button
+                  variant={focusMode ? "default" : "ghost"}
+                  className={focusMode ? "bg-primary hover:bg-primary/90" : "text-muted-foreground hover:text-foreground"}
+                  size="sm"
+                  onClick={() => setFocusMode(!focusMode)}
+                  title={focusMode ? "Exit Focus Mode" : "Enter Focus Mode"}
+                >
+                  {focusMode ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                </Button>
+                <Button
+                  variant={showPlan ? "outline" : "default"}
+                  className={showPlan ? "" : "bg-primary hover:bg-primary/90"}
+                  size="sm"
+                  onClick={() => setShowPlan(!showPlan)}
+                >
+                  {showPlan ? "Back" : "⚡ AI Plan"}
+                </Button>
+              </>
             )}
           </div>
         </div>
+
+        {focusMode && (
+          <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-primary/10 border border-primary/20">
+            <Eye className="w-3.5 h-3.5 text-primary" />
+            <span className="text-xs text-primary font-medium">Focus Mode — drills only</span>
+            <button onClick={() => setFocusMode(false)} className="text-[10px] text-primary/70 underline ml-1">Exit</button>
+          </div>
+        )}
 
         <DrillDetailDialog
           open={!!selectedDrill}
@@ -356,9 +376,9 @@ export default function Training() {
           <TrainingPlanGenerator profile={profile} />
         ) : (
           <>
-            <EquipmentSummary profileId={profile?.id} />
-            <MaintenanceTracker profile={profile} />
-            <SessionGearChecklist profile={profile} />
+            {!focusMode && <EquipmentSummary profileId={profile?.id} />}
+            {!focusMode && <MaintenanceTracker profile={profile} />}
+            {!focusMode && <SessionGearChecklist profile={profile} />}
             
             {/* Drill Search */}
             <div className="relative">
@@ -460,6 +480,7 @@ export default function Training() {
                       index={i}
                       profile={profile}
                       favorites={profile?.favorite_drills || []}
+                      focusMode={focusMode}
                       onSelect={(d) => { setSelectedDrill(d); setSelectedCategory(category); }}
                     />
                   ));
@@ -493,28 +514,30 @@ export default function Training() {
 
                   return (
                   <TabsContent key={key} value={key} className="space-y-3 mt-4">
-                    <div className={`rounded-xl border bg-gradient-to-br p-4 ${cat.color}`}>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="font-semibold text-sm">{cat.label} Training</h3>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {showMyLevel ? `${allUnlocked.length} ${level}-level drills` : `${allUnlocked.length} drills unlocked`}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          {tier >= 0 ? (
-                            <span className="text-xs font-medium" style={{ color: cat.color?.match(/#[a-f0-9]+/i)?.[0] || "#22c55e" }}>
-                              {TIER_ICONS[tier]} {TIER_LABELS[tier]}
-                            </span>
-                          ) : (
-                            <span className="text-[10px] text-muted-foreground">No tier</span>
-                          )}
+                    {!focusMode && (
+                      <div className={`rounded-xl border bg-gradient-to-br p-4 ${cat.color}`}>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="font-semibold text-sm">{cat.label} Training</h3>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {showMyLevel ? `${allUnlocked.length} ${level}-level drills` : `${allUnlocked.length} drills unlocked`}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {tier >= 0 ? (
+                              <span className="text-xs font-medium" style={{ color: cat.color?.match(/#[a-f0-9]+/i)?.[0] || "#22c55e" }}>
+                                {TIER_ICONS[tier]} {TIER_LABELS[tier]}
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-muted-foreground">No tier</span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    )}
 
                     {/* Locked tier previews */}
-                    {UNLOCKED_LEVELS.slice(unlockedIndex + 1).map((lvl, offset) => {
+                    {!focusMode && UNLOCKED_LEVELS.slice(unlockedIndex + 1).map((lvl, offset) => {
                       const lvlDrills = cat.drills[lvl] || [];
                       if (lvlDrills.length === 0) return null;
                       const nextTierIdx = tier + offset + 1;
@@ -567,6 +590,7 @@ export default function Training() {
                               index={i}
                               profile={profile}
                               favorites={profile?.favorite_drills || []}
+                              focusMode={focusMode}
                               onSelect={(d) => { setSelectedDrill(d); setSelectedCategory(key); }}
                             />
                           </div>
@@ -581,13 +605,15 @@ export default function Training() {
         )}
 
         {/* Fitness Trainer Agent */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-xl bg-card border border-red-500/20 p-5"
-        >
-          <FitnessTrainerChat profile={profile} />
-        </motion.div>
+        {!focusMode && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-xl bg-card border border-red-500/20 p-5"
+          >
+            <FitnessTrainerChat profile={profile} />
+          </motion.div>
+        )}
       </div>
       </PullToRefresh>
     </div>
