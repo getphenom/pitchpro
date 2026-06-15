@@ -21,6 +21,7 @@ import FitnessTrainerChat from "@/components/agents/FitnessTrainerChat";
 import PlayerAssessment from "@/components/training/PlayerAssessment";
 import TrainingLog from "@/components/training/TrainingLog";
 import SessionGearChecklist from "@/components/training/SessionGearChecklist";
+import WorkoutTimer from "@/components/training/WorkoutTimer";
 
 const TRAINING_CATEGORIES = {
   technical: {
@@ -362,6 +363,7 @@ export default function Training() {
           <TrainingPlanGenerator profile={profile} />
         ) : (
           <>
+            <WorkoutTimer />
             {!focusMode && <EquipmentSummary profileId={profile?.id} />}
             {!focusMode && <MaintenanceTracker profile={profile} />}
             {!focusMode && <SessionGearChecklist profile={profile} />}
