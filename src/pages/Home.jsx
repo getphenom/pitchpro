@@ -10,6 +10,7 @@ import StreakBanner from "@/components/home/StreakBanner";
 import PerformanceFeedback from "@/components/home/PerformanceFeedback";
 import DailyReminder from "@/components/home/DailyReminder";
 import DailyFocus from "@/components/home/DailyFocus";
+import TodaysRoadmap from "@/components/home/TodaysRoadmap";
 
 import ReadinessScore from "@/components/home/ReadinessScore";
 import IdpSkillChart from "@/components/home/IdpSkillChart";
@@ -145,11 +146,14 @@ export default function Home() {
       }
     }
 
-    await updateLog.mutateAsync({
-      quests_completed: newCompleted,
+    const updateData = {
+      quests_completed: quest.id?.startsWith("meal_") ? currentCompleted : newCompleted,
       xp_earned_today: Math.max(0, newXp),
       ...(quest.category === "training" ? { training_completed: newTraining } : {}),
-    });
+      ...(quest.meals_logged ? { meals_logged: quest.meals_logged } : {}),
+    };
+
+    await updateLog.mutateAsync(updateData);
 
     const updatedProfile = {
       xp: Math.max(0, (profile.xp || 0) + xpDelta),
@@ -324,6 +328,12 @@ export default function Home() {
             <DailyReminder dailyLog={dailyLog} profile={profile} />
 
             <DailyFocus profile={profile} dailyLog={dailyLog} />
+
+            <TodaysRoadmap
+              profile={profile}
+              dailyLog={dailyLog}
+              onQuestComplete={handleQuestComplete}
+            />
 
             <motion.div
               initial={{ opacity: 0, y: 10 }}
