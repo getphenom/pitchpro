@@ -7,20 +7,18 @@ import XpBar from "@/components/shared/XpBar";
 import WaterTracker from "@/components/shared/WaterTracker";
 import DailyQuests from "@/components/home/DailyQuests";
 import StreakBanner from "@/components/home/StreakBanner";
-import WeeklyProgress from "@/components/shared/WeeklyProgress";
 import PerformanceFeedback from "@/components/home/PerformanceFeedback";
 import DailyReminder from "@/components/home/DailyReminder";
+import DailyFocus from "@/components/home/DailyFocus";
 
 import ReadinessScore from "@/components/home/ReadinessScore";
-import WeeklySummary from "@/components/home/WeeklySummary";
-import DashboardCharts from "@/components/home/DashboardCharts";
 import IdpSkillChart from "@/components/home/IdpSkillChart";
 import GapDrillsHighlights from "@/components/home/GapDrillsHighlights";
 import { POSITION_LABELS, BADGES, getLevel, LEVEL_TITLES } from "@/lib/gameData";
 import { checkBadges } from "@/lib/badgeChecker";
-import { getCategoryBadge, getBadgeById } from "@/lib/categoryProgression";
-import CategoryProgression from "@/components/shared/CategoryProgression";
-import { Loader2, Trophy, TrendingUp, Sparkles, LayoutDashboard, ListChecks, CalendarPlus } from "lucide-react";
+import { getBadgeById } from "@/lib/categoryProgression";
+
+import { Loader2, Sparkles, LayoutDashboard, ListChecks, CalendarPlus } from "lucide-react";
 import { motion } from "framer-motion";
 import PullToRefresh from "@/components/shared/PullToRefresh";
 import PainPatternAlert from "@/components/injury/PainPatternAlert";
@@ -325,6 +323,8 @@ export default function Home() {
           <>
             <DailyReminder dailyLog={dailyLog} profile={profile} />
 
+            <DailyFocus profile={profile} dailyLog={dailyLog} />
+
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -375,58 +375,6 @@ export default function Home() {
             >
               <GapDrillsHighlights profile={profile} />
             </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35 }}
-              className="rounded-xl bg-card border border-border p-4"
-            >
-              <div className="flex items-center gap-2 mb-4">
-                <TrendingUp className="w-4 h-4 text-primary" />
-                <h3 className="font-heading font-bold text-sm tracking-wider uppercase text-muted-foreground">
-                  Weekly Progress
-                </h3>
-              </div>
-              <WeeklyProgress
-                currentStats={profile.stats || {}}
-                snapshots={snapshots}
-              />
-            </motion.div>
-
-            <DashboardCharts profile={profile} />
-
-            <WeeklySummary profile={profile} />
-
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
-              <CategoryProgression dailyLogs={allLogs} />
-            </motion.div>
-
-            {profile.badges?.length > 0 && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
-            <h3 className="font-heading font-bold text-sm tracking-wider uppercase text-muted-foreground mb-3">
-              Badges
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {profile.badges.map((badgeId) => {
-                const badge = BADGES[badgeId] || getBadgeById(badgeId);
-                if (!badge) return null;
-                return (
-                  <div
-                    key={badgeId}
-                    className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2"
-                  >
-                    <span className="text-lg">{badge.icon}</span>
-                    <div>
-                      <p className="text-xs font-semibold">{badge.name}</p>
-                      <p className="text-[10px] text-muted-foreground">{badge.desc}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
           </>
         )}
 
