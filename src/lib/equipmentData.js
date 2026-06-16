@@ -54,10 +54,7 @@ export const EQUIPMENT_ALTERNATIVES = {
 
   // Protection
   "Shin Guards": [
-    "Thick cardboard cut to size + tape around your shin",
-    "Magazine or newspaper folded and taped to shin (old-school trick)",
-    "Sweatbands or thick socks layered up",
-    "Plastic from a cut gallon jug (softened edges)",
+    "Required gear — there's no safe homemade substitute. Ask a parent to grab a pair before training or a match.",
   ],
   "Goalkeeper Gloves": [
     "Gardening gloves with grip",
