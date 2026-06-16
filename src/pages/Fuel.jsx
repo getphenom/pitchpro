@@ -9,6 +9,7 @@ import MealDetailDialog from "@/components/nutrition/MealDetailDialog";
 import NutritionCoachChat from "@/components/agents/NutritionCoachChat";
 import DailyMacroLogger from "@/components/nutrition/DailyMacroLogger";
 import MacroChart from "@/components/nutrition/MacroChart";
+import NutritionVsTraining from "@/components/nutrition/NutritionVsTraining";
 import WaterTracker from "@/components/shared/WaterTracker";
 import { RECOVERY_TYPES, RECOVERY_EXERCISES } from "@/lib/recoveryData";
 import RecoveryDetailDialog from "@/components/recovery/RecoveryDetailDialog";
@@ -214,6 +215,7 @@ export default function Fuel() {
             )}
             <DailyMacroLogger profile={profile} />
             <MacroChart profile={profile} />
+            <NutritionVsTraining profile={profile} />
             <NutritionCoachChat profile={profile} />
           </>
         )}
