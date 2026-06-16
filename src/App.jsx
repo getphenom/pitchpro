@@ -68,10 +68,10 @@ const AuthenticatedApp = () => {
         <Route element={<AppLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/train" element={<Train />} />
-          <Route path="/training" element={<Training />} />
-          <Route path="/nutrition" element={<Nutrition />} />
-          <Route path="/mental" element={<Mental />} />
-          <Route path="/player" element={<Player />} />
+          <Route path="/training" element={<Navigate to="/train" replace />} />
+          <Route path="/nutrition" element={<Navigate to="/fuel" replace />} />
+          <Route path="/mental" element={<Navigate to="/mind-hub" replace />} />
+          <Route path="/player" element={<Navigate to="/you" replace />} />
           <Route path="/tactics" element={<Tactics />} />
           <Route path="/tasks" element={<Tasks />} />
           <Route path="/profile" element={<Profile />} />
